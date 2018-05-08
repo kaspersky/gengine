@@ -7,7 +7,7 @@
 
 namespace uttt {
 
-class IBoard: public IGame
+class IBoard: public game::IGame
 {
     int macro;
     std::array<short, 9> micro;
@@ -23,9 +23,9 @@ public:
 
     void computeMacro();
 
-    std::vector<IMove> GetPossibleMoves() const;
+    std::vector<game::IMove> GetPossibleMoves() const;
 
-    void ApplyMove(const IMove &move);
+    void ApplyMove(const game::IMove &move);
 
     void updateMicro(const std::array<char, 81> &other);
 
@@ -35,7 +35,7 @@ public:
 
     std::size_t Hash() const;
 
-    bool Equal(const IGame *game) const;
+    bool Equal(const game::IGame *game) const;
 
     void Print() const;
 };

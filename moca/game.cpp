@@ -2,6 +2,8 @@
 
 #include <game.h>
 
+namespace game {
+
 IMove
 IGame::GetRandomMove() const
 {
@@ -32,4 +34,6 @@ void
 IBot::SendMove(const IMove &move)
 {
     game->ApplyMove(move);
+}
+
 }

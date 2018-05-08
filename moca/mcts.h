@@ -7,18 +7,18 @@
 namespace std
 {
     template<>
-    struct hash<const IGame *>
+    struct hash<const game::IGame *>
     {
-        std::size_t operator()(const IGame *game) const
+        std::size_t operator()(const game::IGame *game) const
         {
             return game->Hash();
         }
     };
 
     template<>
-    struct equal_to<const IGame *>
+    struct equal_to<const game::IGame *>
     {
-        bool operator()(const IGame *game1, const IGame *game2) const
+        bool operator()(const game::IGame *game1, const game::IGame *game2) const
         {
             return game1->Equal(game2);
         }
@@ -27,10 +27,10 @@ namespace std
 
 struct MCTSNode
 {
-    IGame *game;
+    game::IGame *game;
     double value;
     int total;
-    std::unordered_map<IMove, MCTSNode *> children;
+    std::unordered_map<game::IMove, MCTSNode *> children;
 
     MCTSNode();
 

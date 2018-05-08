@@ -2,6 +2,8 @@
 
 #include <vector>
 
+namespace game {
+
 typedef long long IMove;
 
 class IGame
@@ -40,3 +42,5 @@ public:
 
     virtual void SendMove(const IMove &move) = 0;
 };
+
+}

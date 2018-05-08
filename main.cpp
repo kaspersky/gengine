@@ -26,7 +26,7 @@ int main()
     node2.game = new uttt::IBoard;
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 1000000; ++i)
+    for (int i = 0; i < 100000; ++i)
         MCTS2(&node2);
     auto t2 = std::chrono::high_resolution_clock::now();
     std::cout << "MCTS2 done: " << node2.total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
@@ -37,7 +37,7 @@ int main()
     t2 = std::chrono::high_resolution_clock::now();
     std::cout << "MCTS1 done: " << node.total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
 
-    std::vector<std::pair<IMove, MCTSNode *>> best1, best2;
+    std::vector<std::pair<game::IMove, MCTSNode *>> best1, best2;
     for (auto it : node.children)
         best1.emplace_back(it.first, it.second);
     for (auto it : node2.children)

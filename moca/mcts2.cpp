@@ -40,9 +40,9 @@ MCTS2(MCTSNode *root)
 
             nodes.push_back(new_node);
 
-            IGame *game = new_node->game->Clone();
+            game::IGame *game = new_node->game->Clone();
             int status = game->GetStatus();
-            while (status == 0)
+            while (status == game::IGame::Undecided)
             {
                 auto m = game->GetRandomMove();
                 game->ApplyMove(m);
@@ -72,7 +72,7 @@ MCTS2(MCTSNode *root)
     for (unsigned i = 0; i < nodes.size(); ++i)
         ++nodes[i]->total;
 
-    if (status != 3)
+    if (status != game::IGame::Draw)
     {
         int s1 = -1, s2 = 1;
         if (status == 2)
