@@ -9,7 +9,6 @@ namespace uttt {
 static short g_factors[9] = {1, 3, 9, 27, 81, 243, 729, 2187, 6561};
 static int g_factors4[9] = {1, 4, 16, 64, 256, 1024, 4096, 16384, 65536};
 static char g_board_status[19683];
-static int g_board_value[2][19683];
 static std::vector<char> g_moves[19683];
 static char g_macro_board_status[262144];
 
@@ -81,43 +80,6 @@ getMacroBoardStatus(const char board[3][3])
     return game::IGame::Draw;
 }
 
-static int
-getBoardValue(char board[3][3], char player, char board_status)
-{
-    if (board_status != game::IGame::Undecided)
-        return 0;
-
-    int value = 0;
-
-    if (board[1][1] == player)
-        value += 3;
-    else if (board[1][1] == 3 - player)
-        value -= 3;
-
-    if (board[1][1] == player && (board[1][1] == board[0][0] || board[1][1] == board[0][2] || board[1][1] == board[2][0] || board[1][1] == board[2][2] || board[1][1] == board[0][1] || board[1][1] == board[1][0] || board[1][1] == board[1][2] || board[1][1] == board[2][1]))
-        value += 2;
-    if (board[1][1] == 3 - player && (board[1][1] == board[0][0] || board[1][1] == board[0][2] || board[1][1] == board[2][0] || board[1][1] == board[2][2] || board[1][1] == board[0][1] || board[1][1] == board[1][0] || board[1][1] == board[1][2] || board[1][1] == board[2][1]))
-        value -= 2;
-    if (board[0][1] == player && (board[0][1] == board[0][0] || board[0][1] == board[0][2]))
-        value += 2;
-    if (board[0][1] == 3 - player && (board[0][1] == board[0][0] || board[0][1] == board[0][2]))
-        value -= 2;
-    if (board[1][0] == player && (board[1][0] == board[0][0] || board[1][0] == board[2][0]))
-        value += 2;
-    if (board[1][0] == 3 - player && (board[1][0] == board[0][0] || board[1][0] == board[2][0]))
-        value -= 3;
-    if (board[1][2] == player && (board[1][2] == board[0][2] || board[1][2] == board[2][2]))
-        value += 2;
-    if (board[1][2] == 3 - player && (board[1][2] == board[0][2] || board[1][2] == board[2][2]))
-        value -= 2;
-    if (board[2][1] == player && (board[2][1] == board[2][0] || board[2][1] == board[2][2]))
-        value += 2;
-    if (board[2][1] == 3 - player && (board[2][1] == board[2][0] || board[2][1] == board[2][2]))
-        value -= 2;
-
-    return value;
-}
-
 struct UtttInit
 {
     UtttInit()
@@ -127,8 +89,6 @@ struct UtttInit
         {
             makeBoard(board, i);
             g_board_status[i] = getBoardStatus(board);
-            g_board_value[0][i] = getBoardValue(board, 1, g_board_status[i]);
-            g_board_value[1][i] = -g_board_value[0][i];
         }
 
         for (short i = 0; i < 19683; i++)
@@ -139,27 +99,9 @@ struct UtttInit
         for (short i = 0; i < 19683; i++)
             if (g_board_status[i] == game::IGame::Undecided)
             {
-                //for (int j = 0; j < 9; j++)
-                //    if ((i / g_factors[j]) % 3 == 0)
-                //        g_moves[i].push_back(j);
-                if ((i / g_factors[4]) % 3 == 0)
-                    g_moves[i].push_back(4);
-                if ((i / g_factors[0]) % 3 == 0)
-                    g_moves[i].push_back(0);
-                if ((i / g_factors[2]) % 3 == 0)
-                    g_moves[i].push_back(2);
-                if ((i / g_factors[6]) % 3 == 0)
-                    g_moves[i].push_back(6);
-                if ((i / g_factors[8]) % 3 == 0)
-                    g_moves[i].push_back(8);
-                if ((i / g_factors[1]) % 3 == 0)
-                    g_moves[i].push_back(1);
-                if ((i / g_factors[3]) % 3 == 0)
-                    g_moves[i].push_back(3);
-                if ((i / g_factors[5]) % 3 == 0)
-                    g_moves[i].push_back(5);
-                if ((i / g_factors[7]) % 3 == 0)
-                    g_moves[i].push_back(7);
+                for (int j = 0; j < 9; j++)
+                    if ((i / g_factors[j]) % 3 == 0)
+                        g_moves[i].push_back(j);
             }
 
         for (int i = 0; i < 262144; i++)
