@@ -7,7 +7,7 @@
 
 int main()
 {
-#if 1
+#if 0
     uttt::IBoard board;
     board.Print();
     std::vector<char> moves;
@@ -26,7 +26,7 @@ int main()
     node2.game = new uttt::IBoard;
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 100000; ++i)
+    for (int i = 0; i < 1000000; ++i)
         MCTS2(&node2);
     auto t2 = std::chrono::high_resolution_clock::now();
     std::cout << "MCTS2 done: " << node2.total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';

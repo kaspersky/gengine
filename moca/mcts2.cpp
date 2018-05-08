@@ -35,7 +35,7 @@ MCTS2(MCTSNode *root)
         {
             MCTSNode *new_node = new MCTSNode;
             new_node->game = node->game->Clone();
-            new_node->game->Move(m);
+            new_node->game->ApplyMove(m);
             node->children[m] = new_node;
 
             nodes.push_back(new_node);
@@ -45,7 +45,7 @@ MCTS2(MCTSNode *root)
             while (status == 0)
             {
                 auto m = game->GetRandomMove();
-                game->Move(m);
+                game->ApplyMove(m);
                 status = game->GetStatus();
             }
             delete game;

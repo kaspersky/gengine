@@ -15,7 +15,7 @@ public:
         Draw = 3,
     };
 
-    virtual void Move(const IMove &move) = 0;
+    virtual void ApplyMove(const IMove &move) = 0;
     virtual std::vector<IMove> GetPossibleMoves() const = 0;
     virtual int GetMoveCount() const;
     virtual IMove GetRandomMove() const;
@@ -25,4 +25,18 @@ public:
     virtual bool Equal(const IGame *game) const = 0;
     virtual void Print() const = 0;
     virtual ~IGame() {}
+};
+
+class IBot
+{
+    IGame *game;
+
+public:
+    IBot();
+
+    virtual void Init(const IGame *game) = 0;
+
+    virtual IMove MakeMove() = 0;
+
+    virtual void SendMove(const IMove &move) = 0;
 };

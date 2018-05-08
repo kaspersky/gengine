@@ -236,7 +236,7 @@ IBoard::GetPossibleMoves() const
 }
 
 void
-IBoard::Move(const IMove &move)
+IBoard::ApplyMove(const IMove &move)
 {
     micro[move / 9] += player * g_factors[move % 9];
     macro += g_board_status[micro[move / 9]] * g_factors4[move / 9];

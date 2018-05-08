@@ -17,3 +17,19 @@ IGame::GetMoveCount() const
 {
     return GetPossibleMoves().size();
 }
+
+IBot::IBot(): game(nullptr)
+{
+}
+
+void
+IBot::Init(const IGame *game)
+{
+    this->game = game->Clone();
+}
+
+void
+IBot::SendMove(const IMove &move)
+{
+    game->ApplyMove(move);
+}

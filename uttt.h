@@ -25,7 +25,7 @@ public:
 
     std::vector<IMove> GetPossibleMoves() const;
 
-    void Move(const IMove &move);
+    void ApplyMove(const IMove &move);
 
     void updateMicro(const std::array<char, 81> &other);
 
