@@ -7,53 +7,37 @@
 
 namespace uttt {
 
-enum BoardStatus
-{
-    Undecided = 0,
-    Win1 = 1,
-    Win2 = 2,
-    Draw = 3,
-};
-
-struct Board
+class IBoard: public IGame
 {
     int macro;
     std::array<short, 9> micro;
     char next;
-
-    Board(int macro, const std::array<short, 9> &micro, char next);
-
-    Board();
-
-    bool operator==(const Board &other) const;
-
-    void print() const;
-
-    void computeMacro();
-
-    void getMoves(std::vector<char> &moves) const;
-
-    void applyMove(char move, char player);
-
-    void updateMicro(const std::array<char, 81> &other);
-
-    char getStatus();
-};
-
-class IBoard: public IGame
-{
-    struct Board board;
     char player;
 
 public:
+    IBoard(int macro, const std::array<short, 9> &micro, char next, char player);
+
     IBoard();
-    void Move(const IMove &move);
+
+    bool operator==(const IBoard &other) const;
+
+    void computeMacro();
+
     std::vector<IMove> GetPossibleMoves() const;
-    int GetStatus();
+
+    void Move(const IMove &move);
+
+    void updateMicro(const std::array<char, 81> &other);
+
+    int GetStatus() const;
+
     IGame *Clone() const;
+
     std::size_t Hash() const;
+
     bool Equal(const IGame *game) const;
-    void Print();
+
+    void Print() const;
 };
 
 }

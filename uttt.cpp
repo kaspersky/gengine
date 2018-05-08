@@ -4,32 +4,6 @@
 
 #include <uttt.h>
 
-namespace std {
-
-template <>
-struct hash<uttt::Board>
-{
-    std::size_t operator()(const uttt::Board &board) const
-    {
-        std::size_t ret = board.macro;
-        for (auto n : board.micro)
-            ret ^= (n << 1);
-        ret ^= board.next;
-        return ret;
-    }
-};
-
-template <>
-struct hash<std::pair<uttt::Board, char>>
-{
-    std::size_t operator()(const std::pair<uttt::Board, char> &arg) const
-    {
-        return hash<uttt::Board>()(arg.first) ^ (arg.second << 1);
-    }
-};
-
-} // namespace std
-
 namespace uttt {
 
 static short g_factors[9] = {1, 3, 9, 27, 81, 243, 729, 2187, 6561};
@@ -73,18 +47,18 @@ getBoardStatus(const char board[3][3])
     for (int i = 0; i < 3; i++)
     {
         if (board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != 0)
-            return (board[i][0] == 1 ? Win1 : Win2);
+            return (board[i][0] == 1 ? IGame::Win1 : IGame::Win2);
         if (board[0][i] == board[1][i] && board[1][i] == board[2][i] && board[0][i] != 0)
-            return (board[0][i] == 1 ? Win1 : Win2);
+            return (board[0][i] == 1 ? IGame::Win1 : IGame::Win2);
     }
     if ((board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[0][0] != 0) ||
         (board[2][0] == board[1][1] && board[1][1] == board[0][2] && board[2][0] != 0))
-        return (board[1][1] == 1 ? Win1 : Win2);
+        return (board[1][1] == 1 ? IGame::Win1 : IGame::Win2);
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
             if (board[i][j] == 0)
-                return Undecided;
-    return Draw;
+                return IGame::Undecided;
+    return IGame::Draw;
 }
 
 static char
@@ -93,24 +67,24 @@ getMacroBoardStatus(const char board[3][3])
     for (int i = 0; i < 3; i++)
     {
         if (board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != 0 && board[i][0] != 3)
-            return (board[i][0] == 1 ? Win1 : Win2);
+            return (board[i][0] == 1 ? IGame::Win1 : IGame::Win2);
         if (board[0][i] == board[1][i] && board[1][i] == board[2][i] && board[0][i] != 0 && board[0][i] != 3)
-            return (board[0][i] == 1 ? Win1 : Win2);
+            return (board[0][i] == 1 ? IGame::Win1 : IGame::Win2);
     }
     if ((board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[0][0] != 0 && board[0][0] != 3) ||
         (board[2][0] == board[1][1] && board[1][1] == board[0][2] && board[2][0] != 0 && board[2][0] != 3))
-        return (board[1][1] == 1 ? Win1 : Win2);
+        return (board[1][1] == 1 ? IGame::Win1 : IGame::Win2);
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
             if (board[i][j] == 0)
-                return Undecided;
-    return Draw;
+                return IGame::Undecided;
+    return IGame::Draw;
 }
 
 static int
 getBoardValue(char board[3][3], char player, char board_status)
 {
-    if (board_status != Undecided)
+    if (board_status != IGame::Undecided)
         return 0;
 
     int value = 0;
@@ -163,7 +137,7 @@ struct UtttInit
         }
 
         for (short i = 0; i < 19683; i++)
-            if (g_board_status[i] == Undecided)
+            if (g_board_status[i] == IGame::Undecided)
             {
                 //for (int j = 0; j < 9; j++)
                 //    if ((i / g_factors[j]) % 3 == 0)
@@ -198,17 +172,25 @@ struct UtttInit
 
 static UtttInit g_UtttInit;
 
-Board::Board(int macro, const std::array<short, 9> &micro, char next): macro(macro), micro(micro), next(next) {}
+IBoard::IBoard(int macro, const std::array<short, 9> &micro, char next, char player): macro(macro), micro(micro), next(next), player(player)
+{
+    this->player = player;
+}
 
-Board::Board(): macro(0), micro({}), next(-1) {}
+IBoard::IBoard(): macro(0), micro({}), next(-1), player(1)
+{
+}
 
-bool Board::operator==(const Board &other) const
+bool
+IBoard::operator==(const IBoard &other) const
 {
     return macro == other.macro && micro == other.micro && next == other.next;
 }
 
-void Board::print() const
+void
+IBoard::Print() const
 {
+    std::cout << "Player to move: " << static_cast<int>(player) << '\n';
     std::cout << static_cast<int>(next) << '\n';
     int data1[3][3];
     for (int i = 0; i < 9; i++)
@@ -229,17 +211,19 @@ void Board::print() const
             std::cout << static_cast<int>(data[i][j]) << ' ';
         std::cout << '\n';
     }
-    std::cout << '\n';
+    std::cout << "Status: " << static_cast<int>(GetStatus()) << "\n\n";
 }
 
-void Board::computeMacro()
+void
+IBoard::computeMacro()
 {
     macro = g_board_status[micro[0]] * g_factors4[0] + g_board_status[micro[1]] * g_factors4[1] + g_board_status[micro[2]] * g_factors4[2] + g_board_status[micro[3]] * g_factors4[3] + g_board_status[micro[4]] * g_factors4[4] + g_board_status[micro[5]] * g_factors4[5] + g_board_status[micro[6]] * g_factors4[6] + g_board_status[micro[7]] * g_factors4[7] + g_board_status[micro[8]] * g_factors4[8];
 }
 
-void Board::getMoves(std::vector<char> &moves) const
+std::vector<IMove>
+IBoard::GetPossibleMoves() const
 {
-    moves.clear();
+    std::vector<IMove> moves;
     if (next >= 0)
         for (auto m : g_moves[micro[next]])
             moves.emplace_back(next * 9 + m);
@@ -248,9 +232,11 @@ void Board::getMoves(std::vector<char> &moves) const
             if (g_board_status[micro[i]] == Undecided)
                 for (auto m : g_moves[micro[i]])
                     moves.emplace_back(i * 9 + m);
+    return moves;
 }
 
-void Board::applyMove(char move, char player)
+void
+IBoard::Move(const IMove &move)
 {
     micro[move / 9] += player * g_factors[move % 9];
     macro += g_board_status[micro[move / 9]] * g_factors4[move / 9];
@@ -258,9 +244,11 @@ void Board::applyMove(char move, char player)
         next = move % 9;
     else
         next = -1;
+    player = 3 - player;
 }
 
-void Board::updateMicro(const std::array<char, 81> &other)
+void
+IBoard::updateMicro(const std::array<char, 81> &other)
 {
     micro[0] = other[0] * g_factors[0] + other[1] * g_factors[1] + other[2] * g_factors[2] + other[9] * g_factors[3] + other[10] * g_factors[4] + other[11] * g_factors[5] + other[18] * g_factors[6] + other[19] * g_factors[7] + other[20] * g_factors[8];
     micro[1] = other[3] * g_factors[0] + other[4] * g_factors[1] + other[5] * g_factors[2] + other[12] * g_factors[3] + other[13] * g_factors[4] + other[14] * g_factors[5] + other[21] * g_factors[6] + other[22] * g_factors[7] + other[23] * g_factors[8];
@@ -273,63 +261,32 @@ void Board::updateMicro(const std::array<char, 81> &other)
     micro[8] = other[60] * g_factors[0] + other[61] * g_factors[1] + other[62] * g_factors[2] + other[69] * g_factors[3] + other[70] * g_factors[4] + other[71] * g_factors[5] + other[78] * g_factors[6] + other[79] * g_factors[7] + other[80] * g_factors[8];
 }
 
-char Board::getStatus()
+int
+IBoard::GetStatus() const
 {
     return g_macro_board_status[macro];
-}
-
-IBoard::IBoard(): player(1)
-{
-}
-
-void
-IBoard::Move(const IMove &move)
-{
-    board.applyMove(static_cast<char>(move), player);
-    player = 3 - player;
-}
-
-std::vector<IMove>
-IBoard::GetPossibleMoves() const
-{
-    std::vector<IMove> rmoves;
-    std::vector<char> moves;
-    board.getMoves(moves);
-    for (auto m : moves)
-        rmoves.emplace_back(m);
-    return rmoves;
-}
-
-int
-IBoard::GetStatus()
-{
-    return board.getStatus();
 }
 
 IGame *
 IBoard::Clone() const
 {
-    IBoard *iboard = new IBoard();
-    iboard->board = board;
-    return iboard;
+    return new IBoard(macro, micro, next, player);
 }
 
 std::size_t
 IBoard::Hash() const
 {
-    return std::hash<Board>()(board);
+    std::size_t ret = macro;
+    for (auto n : micro)
+        ret = (ret << 1) ^ n;
+    return (ret << 1) ^ next;
 }
 
 bool
 IBoard::Equal(const IGame *game) const
 {
     const IBoard *iboard = dynamic_cast<const IBoard *>(game);
-    return board == iboard->board;
-}
-
-void
-IBoard::Print()
-{
+    return *this == *iboard;
 }
 
 } // namespace utttce std

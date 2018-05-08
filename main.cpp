@@ -7,20 +7,18 @@
 
 int main()
 {
-#if 0
-    uttt::Board board;
-    board.print();
+#if 1
+    uttt::IBoard board;
+    board.Print();
     std::vector<char> moves;
-    char player = 1;
-    while (board.getStatus() == uttt::BoardStatus::Undecided)
+    while (board.GetStatus() == IGame::Undecided)
     {
-        board.getMoves(moves);
-        board.applyMove(moves[0], player);
-        player = 3 - player;
-        board.print();
+        board.Move(board.GetRandomMove());
+        board.Print();
     }
 #endif
 
+#if 1
     MCTSNode node;
     MCTSNode node2;
 
@@ -28,7 +26,7 @@ int main()
     node2.game = new uttt::IBoard;
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 10000; ++i)
+    for (int i = 0; i < 100000; ++i)
         MCTS2(&node2);
     auto t2 = std::chrono::high_resolution_clock::now();
     std::cout << "MCTS2 done: " << node2.total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
@@ -48,5 +46,8 @@ int main()
     std::sort(best2.begin(), best2.end());
 
     for (unsigned i = 0; i < best1.size(); ++i)
-        std::cout << best1[i].first << ": " << best1[i].second->value / best1[i].second->total << ' ' << best1[i].second->total << " vs " << best2[i].second->value / best2[i].second->total << ' ' << best2[i].second->total << '\n';
+        std::cout << best1[i].first << ": " <<
+                  best1[i].second->value / best1[i].second->total << ' ' << best1[i].second->total << " vs " <<
+                  best2[i].second->value / best2[i].second->total << ' ' << best2[i].second->total << '\n';
+#endif
 }
