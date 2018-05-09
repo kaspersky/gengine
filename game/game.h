@@ -26,7 +26,7 @@ public:
     virtual std::size_t Hash() const = 0;
     virtual bool Equal(const IGame *game) const = 0;
     virtual void Print() const = 0;
-    virtual ~IGame() {}
+    virtual ~IGame();
 };
 
 class IBot
@@ -41,6 +41,10 @@ public:
     virtual IMove MakeMove() = 0;
 
     virtual void SendMove(const IMove &move) = 0;
+
+    virtual IBot *Clone() const = 0;
+
+    virtual ~IBot();
 };
 
 }

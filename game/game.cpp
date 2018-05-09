@@ -4,6 +4,10 @@
 
 namespace game {
 
+IGame::~IGame()
+{
+}
+
 IMove
 IGame::GetRandomMove() const
 {
@@ -21,6 +25,10 @@ IGame::GetMoveCount() const
 }
 
 IBot::IBot(): game(nullptr)
+{
+}
+
+IBot::~IBot()
 {
 }
 
