@@ -3,6 +3,7 @@
 #include <array>
 
 #include <uttt.h>
+#include <mcts.h>
 
 namespace uttt {
 
@@ -229,6 +230,40 @@ IBoard::Equal(const IGame *game) const
 {
     const IBoard *iboard = dynamic_cast<const IBoard *>(game);
     return *this == *iboard;
+}
+
+UtttBot::UtttBot(const IBoard &board): board(board)
+{
+}
+
+game::IMove
+UtttBot::MakeMove()
+{
+    MCTSNode node;
+    node.game = board.Clone();
+    for (int i = 0; i < 1000; ++i)
+        MCTS(&node);
+    double max = -1.0;
+    game::IMove move = -1;
+    for (auto it : node.children)
+    {
+        auto v = it.second->value / it.second->total;
+        if (v > max)
+            v = max, move = it.first;
+    }
+    return move;
+}
+
+void
+UtttBot::SendMove(const game::IMove &move)
+{
+    board.ApplyMove(move);
+}
+
+game::IBot *
+UtttBot::Clone() const
+{
+    return new UtttBot(board);
 }
 
 } // namespace utttce std

@@ -40,4 +40,18 @@ public:
     void Print() const;
 };
 
+class UtttBot: public game::IBot
+{
+    IBoard board;
+
+public:
+    UtttBot(const IBoard &board);
+
+    game::IMove MakeMove();
+
+    void SendMove(const game::IMove &move);
+
+    game::IBot *Clone() const;
+};
+
 }

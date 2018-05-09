@@ -36,7 +36,7 @@ class IBot
 public:
     IBot();
 
-    virtual void Init(const IGame *game) = 0;
+    virtual void Init(const IGame *game);
 
     virtual IMove MakeMove() = 0;
 
