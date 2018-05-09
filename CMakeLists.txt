@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 2.6)
+project(main)
+
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -O3")
+
+if (LOGGING)
+    add_definitions(-DLOGGING)
+    if (LOGGING MATCHES "DEBUG")
+        add_definitions(-DLOGGING_DEBUG)
+    elseif (LOGGING MATCHES "INFO")
+        add_definitions(-DLOGGING_INFO)
+    elseif (LOGGING MATCHES "WARNING")
+        add_definitions(-DLOGGING_WARNING)
+    else (LOGGING MATCHES "DEBUG")
+        add_definitions(-DLOGGING_ERROR)
+    endif (LOGGING MATCHES "DEBUG")
+endif (LOGGING)
+
+add_subdirectory(src)
+add_subdirectory(src/mcts)
+add_subdirectory(src/game)
+add_subdirectory(src/manager)
