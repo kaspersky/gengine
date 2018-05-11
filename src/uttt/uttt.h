@@ -45,6 +45,8 @@ class UtttBot: public game::IBot
     IBoard board;
 
 public:
+    UtttBot();
+
     UtttBot(const IBoard &board);
 
     game::IMove MakeMove();

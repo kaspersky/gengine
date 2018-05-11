@@ -35,7 +35,8 @@ IBot::~IBot()
 void
 IBot::Init(const IGame *game)
 {
-    this->game = game->Clone();
+    if (game != nullptr)
+        this->game = game->Clone();
 }
 
 void
