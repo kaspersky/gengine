@@ -78,7 +78,9 @@ MCTS(MCTSNode *root)
     ++nodes[0]->total;
     for (unsigned i = 1; i < nodes.size(); ++i)
     {
-        nodes[i]->total++;
+        ++nodes[i]->total;
+        if (status == game::IGame::Draw)
+            continue;
         if (nodes[i - 1]->game->GetPlayerToMove() == status)
             nodes[i]->value += 1;
         else
