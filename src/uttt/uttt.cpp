@@ -239,11 +239,11 @@ IBoard::Equal(const IGame *game) const
     return *this == *iboard;
 }
 
-UtttBot::UtttBot()
+UtttBot::UtttBot(long long mcts_iterations): mcts_iterations(mcts_iterations)
 {
 }
 
-UtttBot::UtttBot(const IBoard &board): board(board)
+UtttBot::UtttBot(const IBoard &board, long long mcts_iterations): board(board), mcts_iterations(mcts_iterations)
 {
 }
 
@@ -252,7 +252,7 @@ UtttBot::MakeMove()
 {
     MCTSNode node;
     node.game = board.Clone();
-    for (int i = 0; i < 1000; ++i)
+    for (int i = 0; i < mcts_iterations; ++i)
         MCTS(&node);
     double max = -1.1;
     game::IMove move = -1;
@@ -275,7 +275,7 @@ UtttBot::SendMove(const game::IMove &move)
 game::IBot *
 UtttBot::Clone() const
 {
-    return new UtttBot(board);
+    return new UtttBot(board, mcts_iterations);
 }
 
-} // namespace utttce std
+}

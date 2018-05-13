@@ -45,11 +45,12 @@ public:
 class UtttBot: public game::IBot
 {
     IBoard board;
+    long long mcts_iterations;
 
 public:
-    UtttBot();
+    UtttBot(long long mcts_iterations);
 
-    UtttBot(const IBoard &board);
+    UtttBot(const IBoard &board, long long mcts_iterations);
 
     game::IMove MakeMove();
 

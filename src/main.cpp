@@ -52,7 +52,7 @@ int main()
 
 #if 1
     manager::Manager manager;
-    game::IBot *bot1 = new uttt::UtttBot, *bot2 = new uttt::UtttBot;
+    game::IBot *bot1 = new uttt::UtttBot(100), *bot2 = new uttt::UtttBot(1000);
     game::IGame *game = new uttt::IBoard;
 
     auto status = manager.Match(bot1, bot2, game);
