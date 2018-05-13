@@ -52,14 +52,17 @@ int main()
 
 #if 1
     manager::Manager manager;
-    game::IBot *bot1 = new uttt::UtttBot(100), *bot2 = new uttt::UtttBot(1000);
+
     game::IGame *game = new uttt::IBoard;
+    long long game_id = manager.AddGame(game);
+    delete game;
 
-    auto status = manager.Match(bot1, bot2, game);
-    std::cout << "Status: " << status << '\n';
-
+    game::IBot *bot1 = new uttt::UtttBot(1000), *bot2 = new uttt::UtttBot(100);
+    long long bot1_id = manager.AddBot(bot1, game_id), bot2_id = manager.AddBot(bot2, game_id);
     delete bot1;
     delete bot2;
-    delete game;
+
+    auto status = manager.Match(bot1_id, bot2_id);
+    std::cout << "Status: " << status << '\n';
 #endif
 }

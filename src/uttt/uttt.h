@@ -14,6 +14,9 @@ class IBoard: public game::IGame
     char next;
     game::IPlayer player;
 
+    void computeMacro();
+    void updateMicro(const std::array<char, 81> &other);
+
 public:
     IBoard(int macro, const std::array<short, 9> &micro, char next, char player);
 
@@ -21,13 +24,9 @@ public:
 
     bool operator==(const IBoard &other) const;
 
-    void computeMacro();
-
     std::vector<game::IMove> GetPossibleMoves() const;
 
     void ApplyMove(const game::IMove &move);
-
-    void updateMicro(const std::array<char, 81> &other);
 
     int GetStatus() const;
 
