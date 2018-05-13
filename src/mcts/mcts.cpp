@@ -75,23 +75,13 @@ MCTS(MCTSNode *root)
     }
     delete game;
 
-    for (unsigned i = 0; i < nodes.size(); ++i)
+    ++nodes[0]->total;
+    for (unsigned i = 1; i < nodes.size(); ++i)
     {
         nodes[i]->total++;
-
-        if (status == game::IGame::Win1)
-        {
-            if (i % 2 == 0)
-                nodes[i]->value -= 1;
-            else
-                nodes[i]->value += 1;
-        }
-        else if (status == game::IGame::Win2)
-        {
-            if (i % 2 == 0)
-                nodes[i]->value += 1;
-            else
-                nodes[i]->value -= 1;
-        }
+        if (nodes[i - 1]->game->GetPlayerToMove() == status)
+            nodes[i]->value += 1;
+        else
+            nodes[i]->value -= 1;
     }
 }

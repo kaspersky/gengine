@@ -1,20 +1,20 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 namespace game {
 
-typedef long long IMove;
+typedef uint64_t IMove;
+typedef int8_t IPlayer;
 
 class IGame
 {
 public:
-    enum Status
+    enum
     {
-        Undecided = 0,
-        Win1 = 1,
-        Win2 = 2,
-        Draw = 3,
+        Undecided = -1,
+        Draw = 0,
     };
 
     virtual void ApplyMove(const IMove &move) = 0;
@@ -22,6 +22,7 @@ public:
     virtual int GetMoveCount() const;
     virtual IMove GetRandomMove() const;
     virtual int GetStatus() const = 0;
+    virtual IPlayer GetPlayerToMove() const = 0;
     virtual IGame *Clone() const = 0;
     virtual std::size_t Hash() const = 0;
     virtual bool Equal(const IGame *game) const = 0;

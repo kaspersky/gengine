@@ -20,7 +20,7 @@ int main()
     }
 #endif
 
-#if 1
+#if 0
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
     int iter_num = 50;
@@ -50,7 +50,7 @@ int main()
         std::cout << best[i].first << ": " << best[i].second.first / iter_num << ' ' << static_cast<double>(best[i].second.second) / iter_num << '\n';
 #endif
 
-#if 0
+#if 1
     manager::Manager manager;
     game::IBot *bot1 = new uttt::UtttBot, *bot2 = new uttt::UtttBot;
     game::IGame *game = new uttt::IBoard;

@@ -12,7 +12,7 @@ class IBoard: public game::IGame
     int macro;
     std::array<short, 9> micro;
     char next;
-    char player;
+    game::IPlayer player;
 
 public:
     IBoard(int macro, const std::array<short, 9> &micro, char next, char player);
@@ -30,6 +30,8 @@ public:
     void updateMicro(const std::array<char, 81> &other);
 
     int GetStatus() const;
+
+    game::IPlayer GetPlayerToMove() const;
 
     IGame *Clone() const;
 

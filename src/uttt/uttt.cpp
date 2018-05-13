@@ -48,18 +48,18 @@ getBoardStatus(const char board[3][3])
     for (int i = 0; i < 3; i++)
     {
         if (board[i][1] == board[i][0] && board[i][1] == board[i][2] && board[i][1] != 0)
-            return (board[i][1] == 1 ? game::IGame::Win1 : game::IGame::Win2);
+            return (board[i][1] == 1 ? 1 : 2);
         if (board[1][i] == board[0][i] && board[1][i] == board[2][i] && board[1][i] != 0)
-            return (board[1][i] == 1 ? game::IGame::Win1 : game::IGame::Win2);
+            return (board[1][i] == 1 ? 1 : 2);
     }
     if ((board[1][1] == board[0][0] && board[1][1] == board[2][2] && board[1][1] != 0) ||
         (board[1][1] == board[2][0] && board[1][1] == board[0][2] && board[1][1] != 0))
-        return (board[1][1] == 1 ? game::IGame::Win1 : game::IGame::Win2);
+        return (board[1][1] == 1 ? 1 : 2);
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
             if (board[i][j] == 0)
-                return game::IGame::Undecided;
-    return game::IGame::Draw;
+                return 0;
+    return 3;
 }
 
 static char
@@ -68,18 +68,18 @@ getMacroBoardStatus(const char board[3][3])
     for (int i = 0; i < 3; i++)
     {
         if (board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != 0 && board[i][0] != 3)
-            return (board[i][0] == 1 ? game::IGame::Win1 : game::IGame::Win2);
+            return (board[i][0] == 1 ? 1 : 2);
         if (board[0][i] == board[1][i] && board[1][i] == board[2][i] && board[0][i] != 0 && board[0][i] != 3)
-            return (board[0][i] == 1 ? game::IGame::Win1 : game::IGame::Win2);
+            return (board[0][i] == 1 ? 1 : 2);
     }
     if ((board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[0][0] != 0 && board[0][0] != 3) ||
         (board[2][0] == board[1][1] && board[1][1] == board[0][2] && board[2][0] != 0 && board[2][0] != 3))
-        return (board[1][1] == 1 ? game::IGame::Win1 : game::IGame::Win2);
+        return (board[1][1] == 1 ? 1 : 2);
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
             if (board[i][j] == 0)
-                return game::IGame::Undecided;
-    return game::IGame::Draw;
+                return 0;
+    return 3;
 }
 
 struct UtttInit
@@ -94,7 +94,7 @@ struct UtttInit
         }
 
         for (short i = 0; i < 19683; i++)
-            if (g_board_status[i] == game::IGame::Undecided)
+            if (g_board_status[i] == 0)
             {
                 for (int j = 0; j < 9; j++)
                     if ((i / g_factors[j]) % 3 == 0)
@@ -168,7 +168,7 @@ IBoard::GetPossibleMoves() const
             moves.emplace_back(next * 9 + m);
     else
         for (int i = 0; i < 9; i++)
-            if (g_board_status[micro[i]] == game::IGame::Undecided)
+            if (g_board_status[micro[i]] == 0)
                 for (auto m : g_moves[micro[i]])
                     moves.emplace_back(i * 9 + m);
     return moves;
@@ -179,7 +179,7 @@ IBoard::ApplyMove(const game::IMove &move)
 {
     micro[move / 9] += player * g_factors[move % 9];
     macro += g_board_status[micro[move / 9]] * g_factors4[move / 9];
-    if (g_board_status[micro[move % 9]] == game::IGame::Undecided)
+    if (g_board_status[micro[move % 9]] == 0)
         next = move % 9;
     else
         next = -1;
@@ -203,7 +203,18 @@ IBoard::updateMicro(const std::array<char, 81> &other)
 int
 IBoard::GetStatus() const
 {
-    return g_macro_board_status[macro];
+    auto status = g_macro_board_status[macro];
+    if (status == 0)
+        return game::IGame::Undecided;
+    if (status == 3)
+        return game::IGame::Draw;
+    return status;
+}
+
+game::IPlayer
+IBoard::GetPlayerToMove() const
+{
+    return player;
 }
 
 game::IGame *
@@ -243,7 +254,7 @@ UtttBot::MakeMove()
     node.game = board.Clone();
     for (int i = 0; i < 1000; ++i)
         MCTS(&node);
-    double max = -1.0;
+    double max = -1.1;
     game::IMove move = -1;
     for (auto it : node.children)
     {

@@ -20,7 +20,6 @@ Manager::Match(const game::IBot *bot1, const game::IBot *bot2, const game::IGame
     b1->Init(g), b2->Init(g);
 
     int status = g->GetStatus();
-
     while (status == game::IGame::Undecided)
     {
         auto move = b1->MakeMove();
