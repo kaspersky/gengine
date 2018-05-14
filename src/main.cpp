@@ -50,7 +50,7 @@ int main()
         std::cout << best[i].first << ": " << best[i].second.first / iter_num << ' ' << static_cast<double>(best[i].second.second) / iter_num << '\n';
 #endif
 
-#if 1
+#if 0
     manager::Manager manager;
 
     game::IGame *game = new uttt::IBoard;
@@ -68,12 +68,36 @@ int main()
     delete bot3;
 
     std::cout << "Initial ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << '\n';
-    int num_rounds = 1;
+    int num_rounds = 2;
     for (int i = 0; i < num_rounds; ++i)
     {
         std::cout << "Round " << i + 1 << " / " << num_rounds << '\n';
         manager.RoundRobin(game_id);
         std::cout << "New ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << " vs " << manager.GetBotRating(bot3_id) << '\n';
+    }
+#endif
+#if 1
+    MCTSNode node;
+    node.game = new uttt::IBoard;
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+    for (long long iteration = 0; ; ++iteration)
+    {
+        MCTS(&node);
+        if ((iteration + 1) % 100000 == 0)
+        {
+            auto t2 = std::chrono::high_resolution_clock::now();
+            std::cout << "Iterations " << iteration + 1 << ": " << node.total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count() << " seconds\n";
+            std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
+            for (auto it : node.children)
+                best.push_back({it.first, {it.second->value / it.second->total, it.second->total}});
+            std::sort(std::begin(best), std::end(best), [](const std::pair<game::IMove, std::pair<double, int>> &p1, const std::pair<game::IMove, std::pair<double, int>> &p2) {
+                return p1.second.first > p2.second.first;
+            });
+            for (auto p : best)
+                std::cout << "Move " << p.first << ": " << p.second.first << ' ' << p.second.second << '\n';
+            std::cout << "Unique positions: " << CountUnique(&node) << '\n';
+        }
     }
 #endif
 }

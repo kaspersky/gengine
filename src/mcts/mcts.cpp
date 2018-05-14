@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <cmath>
 #include <random>
+#include <unordered_set>
 
 #include <mcts.h>
 
@@ -86,4 +87,20 @@ MCTS(MCTSNode *root)
         else
             nodes[i]->value -= 1;
     }
+}
+
+static void
+CountUnique_(const MCTSNode *root, std::unordered_set<const game::IGame *> &set)
+{
+    set.insert(root->game);
+    for (auto it : root->children)
+        CountUnique_(it.second, set);
+}
+
+long long
+CountUnique(const MCTSNode *root)
+{
+    std::unordered_set<const game::IGame *> set;
+    CountUnique_(root, set);
+    return set.size();
 }

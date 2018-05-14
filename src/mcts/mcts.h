@@ -42,3 +42,6 @@ MCTS(MCTSNode *root);
 
 void
 MCTS2(MCTSNode *root);
+
+long long
+CountUnique(const MCTSNode *root);
