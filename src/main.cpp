@@ -62,7 +62,14 @@ int main()
     delete bot1;
     delete bot2;
 
-    auto status = manager.Match(bot1_id, bot2_id);
-    std::cout << "Status: " << status << '\n';
+    std::cout << "Initial ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << '\n';
+    int num_games = 100;
+    for (int i = 0; i < num_games; ++i)
+    {
+        std::cout << "Game " << i + 1 << " / " << num_games << '\n';
+        auto status = manager.Match(bot1_id, bot2_id);
+        std::cout << "Status: " << status << '\n';
+        std::cout << "New ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << '\n';
+    }
 #endif
 }

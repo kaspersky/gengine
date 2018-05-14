@@ -30,6 +30,8 @@ public:
 
     long long AddBot(const game::IBot *bot, long long game_id);
 
+    double GetBotRating(long long bot_id) const;
+
     int Match(long long bot_id1, long long bot_id2);
 };
 
