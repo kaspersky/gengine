@@ -51,7 +51,6 @@ Manager::Match(long long bot_id1, long long bot_id2)
     auto it1 = bots.find(bot_id1), it2 = bots.find(bot_id2);
     auto game = games.find(it1->second->game_id)->second->Clone();
     auto bot1 = it1->second->bot->Clone(), bot2 = it2->second->bot->Clone();
-    bot1->Init(game), bot2->Init(game);
 
     int status = game->GetStatus();
     while (status == game::IGame::Undecided)

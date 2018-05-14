@@ -239,16 +239,11 @@ IBoard::Equal(const IGame *game) const
     return *this == *iboard;
 }
 
-UtttBot::UtttBot(long long mcts_iterations): mcts_iterations(mcts_iterations)
+UtttBot::UtttBot(long long mcts_iterations): game::IBot(nullptr), mcts_iterations(mcts_iterations)
 {
 }
 
-UtttBot::UtttBot(const IBoard &board, long long mcts_iterations): board(board), mcts_iterations(mcts_iterations)
-{
-}
-
-void
-UtttBot::Init(const game::IGame *game)
+UtttBot::UtttBot(const IBoard &board, long long mcts_iterations): game::IBot(nullptr), board(board), mcts_iterations(mcts_iterations)
 {
 }
 

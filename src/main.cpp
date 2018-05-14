@@ -6,6 +6,7 @@
 #include <uttt.h>
 #include <mcts.h>
 #include <manager.h>
+#include <generic_bots.h>
 
 int main()
 {
@@ -50,33 +51,37 @@ int main()
         std::cout << best[i].first << ": " << best[i].second.first / iter_num << ' ' << static_cast<double>(best[i].second.second) / iter_num << '\n';
 #endif
 
-#if 0
+#if 1
     manager::Manager manager;
 
     game::IGame *game = new uttt::IBoard;
     long long game_id = manager.AddGame(game);
-    delete game;
 
     auto bot1 = new uttt::UtttBot(10);
-    auto bot2 = new uttt::UtttBot(100);
-    auto bot3 = new uttt::UtttBot(1000);
+    auto bot2 = new uttt::UtttBot(10);
+    auto bot3 = new uttt::UtttBot(10);
+    auto bot4 = new generic_bots::FixedMctsBot(game, 10);
     long long bot1_id = manager.AddBot(bot1, game_id);
     long long bot2_id = manager.AddBot(bot2, game_id);
     long long bot3_id = manager.AddBot(bot3, game_id);
+    long long bot4_id = manager.AddBot(bot4, game_id);
     delete bot1;
     delete bot2;
     delete bot3;
+    delete bot4;
 
-    std::cout << "Initial ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << '\n';
-    int num_rounds = 2;
+    delete game;
+
+    std::cout << "Initial ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << " vs " << manager.GetBotRating(bot3_id) << " vs " << manager.GetBotRating(bot4_id) << '\n';
+    int num_rounds = 3;
     for (int i = 0; i < num_rounds; ++i)
     {
         std::cout << "Round " << i + 1 << " / " << num_rounds << '\n';
         manager.RoundRobin(game_id);
-        std::cout << "New ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << " vs " << manager.GetBotRating(bot3_id) << '\n';
+        std::cout << "New ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << " vs " << manager.GetBotRating(bot3_id) << " vs " << manager.GetBotRating(bot4_id) << '\n';
     }
 #endif
-#if 1
+#if 0
     MCTSNode node;
     node.game = new uttt::IBoard;
 

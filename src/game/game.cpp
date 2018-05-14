@@ -24,19 +24,15 @@ IGame::GetMoveCount() const
     return GetPossibleMoves().size();
 }
 
-IBot::IBot(): game(nullptr)
+IBot::IBot(const IGame *game): game(nullptr)
 {
+    if (game != nullptr)
+        this->game = game->Clone();
 }
 
 IBot::~IBot()
 {
-}
-
-void
-IBot::Init(const IGame *game)
-{
-    if (game != nullptr)
-        this->game = game->Clone();
+    delete game;
 }
 
 void
