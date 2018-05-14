@@ -57,19 +57,23 @@ int main()
     long long game_id = manager.AddGame(game);
     delete game;
 
-    game::IBot *bot1 = new uttt::UtttBot(1000), *bot2 = new uttt::UtttBot(100);
-    long long bot1_id = manager.AddBot(bot1, game_id), bot2_id = manager.AddBot(bot2, game_id);
+    auto bot1 = new uttt::UtttBot(10);
+    auto bot2 = new uttt::UtttBot(100);
+    auto bot3 = new uttt::UtttBot(1000);
+    long long bot1_id = manager.AddBot(bot1, game_id);
+    long long bot2_id = manager.AddBot(bot2, game_id);
+    long long bot3_id = manager.AddBot(bot3, game_id);
     delete bot1;
     delete bot2;
+    delete bot3;
 
     std::cout << "Initial ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << '\n';
-    int num_games = 100;
-    for (int i = 0; i < num_games; ++i)
+    int num_rounds = 1;
+    for (int i = 0; i < num_rounds; ++i)
     {
-        std::cout << "Game " << i + 1 << " / " << num_games << '\n';
-        auto status = manager.Match(bot1_id, bot2_id);
-        std::cout << "Status: " << status << '\n';
-        std::cout << "New ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << '\n';
+        std::cout << "Round " << i + 1 << " / " << num_rounds << '\n';
+        manager.RoundRobin(game_id);
+        std::cout << "New ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << " vs " << manager.GetBotRating(bot3_id) << '\n';
     }
 #endif
 }

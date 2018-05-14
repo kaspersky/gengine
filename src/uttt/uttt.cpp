@@ -247,6 +247,11 @@ UtttBot::UtttBot(const IBoard &board, long long mcts_iterations): board(board), 
 {
 }
 
+void
+UtttBot::Init(const game::IGame *game)
+{
+}
+
 game::IMove
 UtttBot::MakeMove()
 {

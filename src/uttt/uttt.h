@@ -51,6 +51,8 @@ public:
 
     UtttBot(const IBoard &board, long long mcts_iterations);
 
+    void Init(const game::IGame *game);
+
     game::IMove MakeMove();
 
     void SendMove(const game::IMove &move);

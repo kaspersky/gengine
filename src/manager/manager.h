@@ -33,6 +33,8 @@ public:
     double GetBotRating(long long bot_id) const;
 
     int Match(long long bot_id1, long long bot_id2);
+
+    void RoundRobin(long long game_id);
 };
 
 }

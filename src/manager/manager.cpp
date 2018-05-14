@@ -35,6 +35,8 @@ Manager::~Manager()
 {
     for (auto it : bots)
         delete it.second;
+    for (auto it : games)
+        delete it.second;
 }
 
 double
@@ -98,6 +100,19 @@ Manager::AddBot(const game::IBot *bot, long long game_id)
     bots[id] = m_bot;
     bots_by_game[game_id][id] = m_bot;
     return id;
+}
+
+void
+Manager::RoundRobin(long long game_id)
+{
+    auto bots = bots_by_game.find(game_id)->second;
+    for (auto it1 = bots.begin(); it1 != bots.end(); ++it1)
+    {
+        auto it2 = it1;
+        ++it2;
+        for (; it2 != bots.end(); ++it2)
+            Match(it1->second->id, it2->second->id);
+    }
 }
 
 }
