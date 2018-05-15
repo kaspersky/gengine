@@ -13,6 +13,18 @@ MCTSNode::MCTSNode()
     total = 0;
 }
 
+MCTSNode::MCTSNode(const MCTSNode &other)
+{
+    game = nullptr;
+    if (other.game != nullptr)
+        game = other.game->Clone();
+    value = other.value;
+    total = other.total;
+
+    for (auto it : other.children)
+        children[it.first] = new MCTSNode(*it.second);
+}
+
 MCTSNode::~MCTSNode()
 {
     delete game;

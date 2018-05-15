@@ -34,6 +34,8 @@ struct MCTSNode
 
     MCTSNode();
 
+    MCTSNode(const MCTSNode &other);
+
     ~MCTSNode();
 };
 
