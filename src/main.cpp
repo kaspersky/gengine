@@ -24,7 +24,7 @@ int main()
 #if 0
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
-    int iter_num = 50;
+    int iter_num = 5;
     for (int iter = 0; iter < iter_num; ++iter)
     {
         std::cout << "Iteration: " << iter << '\n';
@@ -57,28 +57,33 @@ int main()
     game::IGame *game = new uttt::IBoard;
     long long game_id = manager.AddGame(game);
 
-    auto bot1 = new uttt::UtttBot(10);
-    auto bot2 = new uttt::UtttBot(10);
-    auto bot3 = new uttt::UtttBot(10);
-    auto bot4 = new generic_bots::FixedMctsBot(game, 10);
-    long long bot1_id = manager.AddBot(bot1, game_id);
-    long long bot2_id = manager.AddBot(bot2, game_id);
-    long long bot3_id = manager.AddBot(bot3, game_id);
-    long long bot4_id = manager.AddBot(bot4, game_id);
-    delete bot1;
-    delete bot2;
-    delete bot3;
-    delete bot4;
+    std::vector<game::IBot *> bots;
+    bots.emplace_back(new uttt::UtttBot(10));
+    bots.emplace_back(new generic_bots::FixedMctsBot(game, 10));
+
+    std::vector<long long> bot_ids;
+    for (auto bot : bots)
+    {
+        bot_ids.emplace_back(manager.AddBot(bot, game_id));
+        delete bot;
+    }
 
     delete game;
 
-    std::cout << "Initial ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << " vs " << manager.GetBotRating(bot3_id) << " vs " << manager.GetBotRating(bot4_id) << '\n';
+    std::cout << "Initial ratings:";
+    for (long long id : bot_ids)
+        std::cout << ' ' << manager.GetBotRating(id);
+    std::cout << '\n';
+
     int num_rounds = 3;
     for (int i = 0; i < num_rounds; ++i)
     {
         std::cout << "Round " << i + 1 << " / " << num_rounds << '\n';
         manager.RoundRobin(game_id);
-        std::cout << "New ratings: " << manager.GetBotRating(bot1_id) << " vs " << manager.GetBotRating(bot2_id) << " vs " << manager.GetBotRating(bot3_id) << " vs " << manager.GetBotRating(bot4_id) << '\n';
+        std::cout << "New ratings:";
+        for (long long id : bot_ids)
+            std::cout << ' ' << manager.GetBotRating(id);
+        std::cout << '\n';
     }
 #endif
 #if 0
