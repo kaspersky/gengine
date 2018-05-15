@@ -24,7 +24,7 @@ int main()
 #if 0
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
-    int iter_num = 5;
+    int iter_num = 1;
     for (int iter = 0; iter < iter_num; ++iter)
     {
         std::cout << "Iteration: " << iter << '\n';
@@ -33,8 +33,8 @@ int main()
         node.game = new uttt::IBoard;
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < 100000; ++i)
-            MCTS(&node);
+        for (int i = 0; i < 1000000; ++i)
+            MCTS01(&node);
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "MCTS done: " << node.total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
 
@@ -58,8 +58,8 @@ int main()
     long long game_id = manager.AddGame(game);
 
     std::vector<game::IBot *> bots;
-    bots.emplace_back(new generic_bots::FixedMctsBot(game, 10));
-    bots.emplace_back(new generic_bots::FixedMctsBot(game, 10));
+    bots.emplace_back(new generic_bots::FixedMctsBot(game, 10000));
+    bots.emplace_back(new generic_bots::FixedMcts01Bot(game, 10000));
 
     std::vector<long long> bot_ids;
     for (auto bot : bots)
@@ -75,7 +75,7 @@ int main()
         std::cout << ' ' << manager.GetBotRating(id);
     std::cout << '\n';
 
-    int num_rounds = 10;
+    int num_rounds = 100;
     for (int i = 0; i < num_rounds; ++i)
     {
         std::cout << "Round " << i + 1 << " / " << num_rounds << '\n';

@@ -36,6 +36,38 @@ FixedMctsBot::Clone() const
     return new FixedMctsBot(game, num_iterations);
 }
 
+FixedMcts01Bot::FixedMcts01Bot(const game::IGame *game, long long num_iterations): game::IBot(game), num_iterations(num_iterations)
+{
+}
+
+game::IMove
+FixedMcts01Bot::MakeMove()
+{
+    MCTSNode node;
+    node.game = game->Clone();
+    for (int i = 0; i < num_iterations; ++i)
+        MCTS01(&node);
+
+    double max = -1.1;
+    game::IMove move = -1;
+    for (auto it : node.children)
+    {
+        auto v = it.second->value / it.second->total;
+        if (v > max)
+            max = v, move = it.first;
+    }
+
+    game->ApplyMove(move);
+
+    return move;
+}
+
+game::IBot *
+FixedMcts01Bot::Clone() const
+{
+    return new FixedMcts01Bot(game, num_iterations);
+}
+
 FixedMctsWithCachingBot::FixedMctsWithCachingBot(const game::IGame *game, long long num_iterations, const MCTSNode *mcts_node): game::IBot(game), num_iterations(num_iterations), root(nullptr)
 {
     if (mcts_node != nullptr)

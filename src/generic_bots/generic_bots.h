@@ -17,6 +17,18 @@ public:
     game::IBot *Clone() const;
 };
 
+class FixedMcts01Bot: public game::IBot
+{
+    long long num_iterations;
+
+public:
+    FixedMcts01Bot(const game::IGame *game, long long num_iterations);
+
+    game::IMove MakeMove();
+
+    game::IBot *Clone() const;
+};
+
 struct FixedMctsWithCachingBot: public game::IBot
 {
     long long num_iterations;

@@ -43,6 +43,9 @@ void
 MCTS(MCTSNode *root);
 
 void
+MCTS01(MCTSNode *root);
+
+void
 MCTS2(MCTSNode *root);
 
 long long
