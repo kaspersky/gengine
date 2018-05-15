@@ -45,39 +45,55 @@ Manager::GetBotRating(long long bot_id) const
     return bots.find(bot_id)->second->rating;
 }
 
-int
-Manager::Match(long long bot_id1, long long bot_id2)
+std::pair<double, double>
+Manager::Match(long long bot_id1, long long bot_id2, int count)
 {
     auto it1 = bots.find(bot_id1), it2 = bots.find(bot_id2);
-    auto game = games.find(it1->second->game_id)->second->Clone();
-    auto bot1 = it1->second->bot->Clone(), bot2 = it2->second->bot->Clone();
 
-    int status = game->GetStatus();
-    while (status == game::IGame::Undecided)
+    std::pair<double, double> results;
+
+    for (int i = 0; i < count; ++i)
     {
-        auto move = bot1->MakeMove();
-        game->ApplyMove(move);
-        bot2->SendMove(move);
+        auto game = games.find(it1->second->game_id)->second->Clone();
+        game::IBot *bs[2] = {};
+        bs[i % 2] = it1->second->bot->Clone();
+        bs[1 - i % 2] = it2->second->bot->Clone();
+        int status = game->GetStatus();
+        while (status == game::IGame::Undecided)
+        {
+            auto move = bs[0]->MakeMove();
+            game->ApplyMove(move);
+            bs[1]->SendMove(move);
 
-        status = game->GetStatus();
-        if (status != game::IGame::Undecided)
-            break;
+            status = game->GetStatus();
+            if (status != game::IGame::Undecided)
+                break;
 
-        move = bot2->MakeMove();
-        game->ApplyMove(move);
-        bot1->SendMove(move);
+            move = bs[1]->MakeMove();
+            game->ApplyMove(move);
+            bs[0]->SendMove(move);
 
-        status = game->GetStatus();
+            status = game->GetStatus();
+        }
+
+        if (status == game::IGame::Draw)
+            results.first += 0.5, results.second += 0.5;
+        else if (status == 1)
+            i % 2 == 0 ? results.first += 1.0 : results.second += 1.0;
+        else
+            i % 2 == 0 ? results.second += 1.0 : results.first += 1.0;
+
+        delete bs[0];
+        delete bs[1];
+        delete game;
     }
 
-    delete bot1;
-    delete bot2;
-    delete game;
+    results.first /= count, results.second /= count;
 
-    auto new_ratings = mm(it1->second->rating, it2->second->rating, status == game::IGame::Draw ? 0.5 : (status == 1 ? 1.0 : 0.0));
+    auto new_ratings = mm(it1->second->rating, it2->second->rating, results.first);
     it1->second->rating = new_ratings.first, it2->second->rating = new_ratings.second;
 
-    return status;
+    return results;
 }
 
 long long
@@ -110,7 +126,7 @@ Manager::RoundRobin(long long game_id)
         auto it2 = it1;
         ++it2;
         for (; it2 != bots.end(); ++it2)
-            Match(it1->second->id, it2->second->id);
+            Match(it1->second->id, it2->second->id, 2);
     }
 }
 

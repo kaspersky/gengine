@@ -32,7 +32,7 @@ public:
 
     double GetBotRating(long long bot_id) const;
 
-    int Match(long long bot_id1, long long bot_id2);
+    std::pair<double, double> Match(long long bot_id1, long long bot_id2, int count);
 
     void RoundRobin(long long game_id);
 };
