@@ -58,8 +58,9 @@ int main()
     long long game_id = manager.AddGame(game);
 
     std::vector<game::IBot *> bots;
-    bots.emplace_back(new generic_bots::FixedMctsBot(game, 10000));
-    bots.emplace_back(new generic_bots::FixedMcts01Bot(game, 10000));
+    bots.emplace_back(new generic_bots::RandomBot(game));
+    bots.emplace_back(new generic_bots::RandomBot(game));
+    bots.emplace_back(new generic_bots::FixedMctsBot(game, 1000));
 
     std::vector<long long> bot_ids;
     for (auto bot : bots)
@@ -75,7 +76,7 @@ int main()
         std::cout << ' ' << manager.GetBotRating(id);
     std::cout << '\n';
 
-    int num_rounds = 100;
+    int num_rounds = 1000000;
     for (int i = 0; i < num_rounds; ++i)
     {
         std::cout << "Round " << i + 1 << " / " << num_rounds << '\n';

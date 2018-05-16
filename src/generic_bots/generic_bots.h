@@ -48,4 +48,14 @@ public:
     game::IBot *Clone() const;
 };
 
+class RandomBot: public game::IBot
+{
+public:
+    RandomBot(const game::IGame *game);
+
+    game::IMove MakeMove();
+
+    game::IBot *Clone() const;
+};
+
 }
