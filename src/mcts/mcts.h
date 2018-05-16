@@ -32,7 +32,7 @@ struct MCTSNode
     int total;
     std::unordered_map<game::IMove, MCTSNode *> children;
 
-    MCTSNode();
+    MCTSNode(const game::IGame *game);
 
     MCTSNode(const MCTSNode &other);
 

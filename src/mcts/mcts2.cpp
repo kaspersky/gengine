@@ -33,8 +33,7 @@ MCTS2(MCTSNode *root)
         auto moves = node->game->GetPossibleMoves();
         for (auto m : moves)
         {
-            MCTSNode *new_node = new MCTSNode;
-            new_node->game = node->game->Clone();
+            MCTSNode *new_node = new MCTSNode(node->game);
             new_node->game->ApplyMove(m);
             node->children[m] = new_node;
 

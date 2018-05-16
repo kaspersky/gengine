@@ -251,8 +251,7 @@ UtttBot::UtttBot(const IBoard &board, long long mcts_iterations): game::IBot(nul
 game::IMove
 UtttBot::MakeMove()
 {
-    MCTSNode node;
-    node.game = board.Clone();
+    MCTSNode node(&board);
     for (int i = 0; i < mcts_iterations; ++i)
         MCTS(&node);
     double max = -1.1;
@@ -308,8 +307,7 @@ EvalMcts::operator()(const game::IGame *game) const
             return std::numeric_limits<double>::max();
         return std::numeric_limits<double>::min();
     }
-    MCTSNode node;
-    node.game = game->Clone();
+    MCTSNode node(game);
     for (int i = 0; i < 100; ++i)
         MCTS(&node);
     double max = -1.1;

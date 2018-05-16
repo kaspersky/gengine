@@ -6,9 +6,8 @@
 
 #include <mcts.h>
 
-MCTSNode::MCTSNode()
+MCTSNode::MCTSNode(const game::IGame *game): game(game->Clone())
 {
-    game = nullptr;
     value = 0.0;
     total = 0;
 }
@@ -67,8 +66,7 @@ MCTS(MCTSNode *root)
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
-            MCTSNode *new_node = new MCTSNode();
-            new_node->game = node->game->Clone();
+            MCTSNode *new_node = new MCTSNode(node->game);
             new_node->game->ApplyMove(m);
             node->children[m] = new_node;
             node = new_node;
@@ -136,8 +134,7 @@ MCTS01(MCTSNode *root)
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
-            MCTSNode *new_node = new MCTSNode();
-            new_node->game = node->game->Clone();
+            MCTSNode *new_node = new MCTSNode(node->game);
             new_node->game->ApplyMove(m);
             node->children[m] = new_node;
             node = new_node;

@@ -11,8 +11,7 @@ FixedMctsBot::FixedMctsBot(const game::IGame *game, long long num_iterations): g
 game::IMove
 FixedMctsBot::MakeMove()
 {
-    MCTSNode node;
-    node.game = game->Clone();
+    MCTSNode node(game);
     for (int i = 0; i < num_iterations; ++i)
         MCTS(&node);
 
@@ -43,8 +42,7 @@ FixedMcts01Bot::FixedMcts01Bot(const game::IGame *game, long long num_iterations
 game::IMove
 FixedMcts01Bot::MakeMove()
 {
-    MCTSNode node;
-    node.game = game->Clone();
+    MCTSNode node(game);
     for (int i = 0; i < num_iterations; ++i)
         MCTS01(&node);
 
@@ -76,8 +74,7 @@ FixedMctsWithCachingBot::FixedMctsWithCachingBot(const game::IGame *game, long l
 
 FixedMctsWithCachingBot::FixedMctsWithCachingBot(const game::IGame *game, long long num_iterations): game::IBot(game), num_iterations(num_iterations)
 {
-    root = new MCTSNode;
-    root->game = game->Clone();
+    root = new MCTSNode(game);
 }
 
 void
@@ -88,10 +85,7 @@ FixedMctsWithCachingBot::AdvanceRoot(const game::IMove &move)
     delete root;
     root = new_root;
     if (root == nullptr)
-    {
-        root = new MCTSNode;
-        root->game = game->Clone();
-    }
+        root = new MCTSNode(game);
 }
 
 game::IMove
