@@ -58,4 +58,14 @@ public:
     game::IBot *Clone() const;
 };
 
+struct Eval
+{
+    double operator()(const game::IGame *game) const;
+};
+
+struct EvalMcts
+{
+    double operator()(const game::IGame *game) const;
+};
+
 }

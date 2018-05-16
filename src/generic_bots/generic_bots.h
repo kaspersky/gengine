@@ -59,3 +59,5 @@ public:
 };
 
 }
+
+#include <minimax.hpp>

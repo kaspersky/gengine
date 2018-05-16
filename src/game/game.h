@@ -5,7 +5,7 @@
 
 namespace game {
 
-typedef uint64_t IMove;
+typedef int64_t IMove;
 typedef int8_t IPlayer;
 
 class IGame

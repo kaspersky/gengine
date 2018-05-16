@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <limits>
 
 #include <uttt.h>
 #include <mcts.h>
@@ -276,6 +277,45 @@ game::IBot *
 UtttBot::Clone() const
 {
     return new UtttBot(board, mcts_iterations);
+}
+
+double
+Eval::operator()(const game::IGame *game) const
+{
+    const IBoard *board = dynamic_cast<const IBoard *>(game);
+    int status = board->GetStatus();
+    if (status == game::IGame::Draw)
+        return 0.0;
+    if (status != game::IGame::Undecided)
+    {
+        if (board->GetPlayerToMove() == status)
+            return std::numeric_limits<double>::max();
+        return std::numeric_limits<double>::min();
+    }
+    return 0.0;
+}
+
+double
+EvalMcts::operator()(const game::IGame *game) const
+{
+    const IBoard *board = dynamic_cast<const IBoard *>(game);
+    int status = board->GetStatus();
+    if (status == game::IGame::Draw)
+        return 0.0;
+    if (status != game::IGame::Undecided)
+    {
+        if (board->GetPlayerToMove() == status)
+            return std::numeric_limits<double>::max();
+        return std::numeric_limits<double>::min();
+    }
+    MCTSNode node;
+    node.game = game->Clone();
+    for (int i = 0; i < 100; ++i)
+        MCTS(&node);
+    double max = -1.1;
+    for (auto it : node.children)
+        max = std::max(max, it.second->value / it.second->total);
+    return max;
 }
 
 }
