@@ -21,20 +21,20 @@ int main()
     }
 #endif
 
-#if 0
+#if 1
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
     int iter_num = 1;
     for (int iter = 0; iter < iter_num; ++iter)
     {
         std::cout << "Iteration: " << iter << '\n';
-        MCTSNode node;
-
-        node.game = new uttt::IBoard;
+        auto game = new uttt::IBoard;
+        MCTSNode node(game);
+        delete game;
 
         auto t1 = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < 1000000; ++i)
-            MCTS01(&node);
+            MCTS(&node);
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "MCTS done: " << node.total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
 
@@ -51,7 +51,7 @@ int main()
         std::cout << best[i].first << ": " << best[i].second.first / iter_num << ' ' << static_cast<double>(best[i].second.second) / iter_num << '\n';
 #endif
 
-#if 1
+#if 0
     manager::Manager manager;
 
     game::IGame *game = new uttt::IBoard;
