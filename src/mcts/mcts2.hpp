@@ -4,18 +4,19 @@
 
 #include <mcts.h>
 
+template <typename IGame>
 void
-MCTS2(MCTSNode *root)
+MCTS2(MCTSNode<IGame> *root)
 {
-    MCTSNode *node = root;
-    std::vector<MCTSNode *> nodes = {root};
+    MCTSNode<IGame> *node = root;
+    std::vector<MCTSNode<IGame> *> nodes = {root};
     while (!node->children.empty())
     {
-        MCTSNode *child = nullptr;
+        MCTSNode<IGame> *child = nullptr;
         double min = 0.0;
         for (auto it : node->children)
         {
-            const MCTSNode *n = it.second;
+            const MCTSNode<IGame> *n = it.second;
             double p = static_cast<double>(n->value) / n->total + std::sqrt(2.0 * std::log(node->total) / n->total);
             if (p > min || child == nullptr)
             {
@@ -33,15 +34,15 @@ MCTS2(MCTSNode *root)
         auto moves = node->game->GetPossibleMoves();
         for (auto m : moves)
         {
-            MCTSNode *new_node = new MCTSNode(node->game);
+            auto new_node = new MCTSNode<IGame>(node->game);
             new_node->game->ApplyMove(m);
             node->children[m] = new_node;
 
             nodes.push_back(new_node);
 
-            game::IGame *game = new_node->game->Clone();
+            IGame *game = new IGame(new_node->game);
             int status = game->GetStatus();
-            while (status == game::IGame::Undecided)
+            while (status == game::Undecided)
             {
                 auto m = game->GetRandomMove();
                 game->ApplyMove(m);
@@ -71,7 +72,7 @@ MCTS2(MCTSNode *root)
     for (unsigned i = 0; i < nodes.size(); ++i)
         ++nodes[i]->total;
 
-    if (status != game::IGame::Draw)
+    if (status != game::Draw)
     {
         int s1 = -1, s2 = 1;
         if (status == 2)

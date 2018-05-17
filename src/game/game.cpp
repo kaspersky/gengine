@@ -4,6 +4,7 @@
 
 namespace game {
 
+#if 0
 IGame::~IGame()
 {
 }
@@ -23,22 +24,6 @@ IGame::GetMoveCount() const
 {
     return GetPossibleMoves().size();
 }
-
-IBot::IBot(const IGame *game): game(nullptr)
-{
-    if (game != nullptr)
-        this->game = game->Clone();
-}
-
-IBot::~IBot()
-{
-    delete game;
-}
-
-void
-IBot::SendMove(const IMove &move)
-{
-    game->ApplyMove(move);
-}
+#endif
 
 }

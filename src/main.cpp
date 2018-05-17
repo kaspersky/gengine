@@ -24,17 +24,18 @@ int main()
 #if 1
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
-    int iter_num = 1;
+    int iter_num = 10;
     for (int iter = 0; iter < iter_num; ++iter)
     {
         std::cout << "Iteration: " << iter << '\n';
+
         auto game = new uttt::IBoard;
-        MCTSNode node(game);
+        MCTSNode<uttt::IBoard> node(game);
         delete game;
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < 1000000; ++i)
-            MCTS(&node);
+        for (int i = 0; i < 100000; ++i)
+            MCTS01(&node);
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "MCTS done: " << node.total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
 
@@ -52,19 +53,17 @@ int main()
 #endif
 
 #if 0
-    manager::Manager manager;
+    auto game = new uttt::IBoard;
+    manager::Manager<uttt::IBoard> manager(game);
 
-    game::IGame *game = new uttt::IBoard;
-    long long game_id = manager.AddGame(game);
-
-    std::vector<game::IBot *> bots;
-    bots.emplace_back(new generic_bots::MinimaxBot<uttt::EvalMcts>(game, 1));
-    bots.emplace_back(new generic_bots::FixedMctsBot(game, 1000));
+    std::vector<game::IBot<uttt::IBoard> *> bots;
+    bots.emplace_back(new generic_bots::MinimaxBot<uttt::IBoard, uttt::EvalMcts>(game, 1));
+    bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard>(game, 1000));
 
     std::vector<long long> bot_ids;
     for (auto bot : bots)
     {
-        bot_ids.emplace_back(manager.AddBot(bot, game_id));
+        bot_ids.emplace_back(manager.AddBot(bot));
         delete bot;
     }
 
@@ -79,7 +78,7 @@ int main()
     for (int i = 0; i < num_rounds; ++i)
     {
         std::cout << "Round " << i + 1 << " / " << num_rounds << '\n';
-        manager.RoundRobin(game_id);
+        manager.RoundRobin();
         std::cout << "New ratings:";
         for (long long id : bot_ids)
             std::cout << ' ' << manager.GetBotRating(id);
@@ -87,8 +86,9 @@ int main()
     }
 #endif
 #if 0
-    MCTSNode node;
-    node.game = new uttt::IBoard;
+    auto game = new uttt::IBoard;
+    MCTSNode<uttt::IBoard> node(game);
+    delete game;
 
     auto t1 = std::chrono::high_resolution_clock::now();
     for (long long iteration = 0; ; ++iteration)

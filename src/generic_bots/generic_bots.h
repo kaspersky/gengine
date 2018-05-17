@@ -5,59 +5,66 @@
 
 namespace generic_bots {
 
-class FixedMctsBot: public game::IBot
+template <typename IGame>
+class FixedMctsBot: public game::IBot<IGame>
 {
     long long num_iterations;
 
 public:
-    FixedMctsBot(const game::IGame *game, long long num_iterations);
+    FixedMctsBot(const IGame *game, long long num_iterations);
+
+    game::IBot<IGame> *Clone() const;
 
     game::IMove MakeMove();
-
-    game::IBot *Clone() const;
 };
 
-class FixedMcts01Bot: public game::IBot
+template <typename IGame>
+class FixedMcts01Bot: public game::IBot<IGame>
 {
     long long num_iterations;
 
 public:
-    FixedMcts01Bot(const game::IGame *game, long long num_iterations);
+    FixedMcts01Bot(const IGame *game, long long num_iterations);
+
+    game::IBot<IGame> *Clone() const;
 
     game::IMove MakeMove();
-
-    game::IBot *Clone() const;
 };
 
-struct FixedMctsWithCachingBot: public game::IBot
+template <typename IGame>
+struct FixedMctsWithCachingBot: public game::IBot<IGame>
 {
     long long num_iterations;
-    MCTSNode *root;
-
-    FixedMctsWithCachingBot(const game::IGame *game, long long num_iterations, const MCTSNode *mcts_node);
+    MCTSNode<IGame> *root;
 
     void AdvanceRoot(const game::IMove &move);
 
 public:
-    FixedMctsWithCachingBot(const game::IGame *game, long long num_iterations);
+    FixedMctsWithCachingBot(const IGame *game, long long num_iterations);
+
+    FixedMctsWithCachingBot(const IGame *game, long long num_iterations, const MCTSNode<IGame> *root);
+
+    game::IBot<IGame> *Clone() const;
 
     game::IMove MakeMove();
 
     void SendMove(const game::IMove &move);
-
-    game::IBot *Clone() const;
 };
 
-class RandomBot: public game::IBot
+template <typename IGame>
+class RandomBot: public game::IBot<IGame>
 {
+    IGame *game;
 public:
-    RandomBot(const game::IGame *game);
+    RandomBot(const IGame *game);
+
+    game::IBot<IGame> *Clone() const;
 
     game::IMove MakeMove();
-
-    game::IBot *Clone() const;
 };
 
 }
 
-#include <minimax.hpp>
+#include "mcts.hpp"
+#include "random.hpp"
+#include "minimax.hpp"

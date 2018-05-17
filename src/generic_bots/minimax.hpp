@@ -2,12 +2,12 @@
 
 namespace generic_bots {
 
-template <typename Eval>
-class MinimaxBot: public game::IBot
+template <typename IGame, typename Eval>
+class MinimaxBot: public game::IBot<IGame>
 {
     int depth;
 
-    std::pair<double, game::IMove> Minimax(const game::IGame *game, int depth) const
+    std::pair<double, game::IMove> Minimax(const IGame *game, int depth) const
     {
         Eval evaluator;
         if (depth == 0)
@@ -18,7 +18,7 @@ class MinimaxBot: public game::IBot
         std::pair<double, game::IMove> result = {0.0, -1};
         for (auto m : moves)
         {
-            game::IGame *new_game = game->Clone();
+            auto new_game = new IGame(*game);
             new_game->ApplyMove(m);
             auto r = Minimax(new_game, depth - 1);
             delete new_game;
@@ -29,20 +29,20 @@ class MinimaxBot: public game::IBot
     }
 
 public:
-    MinimaxBot(const game::IGame *game, int depth): game::IBot(game), depth(depth)
+    MinimaxBot(const IGame *game, int depth): game::IBot<IGame>(game), depth(depth)
     {
+    }
+
+    game::IBot<IGame> *Clone() const
+    {
+        return new MinimaxBot(this->game, depth);
     }
 
     game::IMove MakeMove()
     {
-        auto r = Minimax(game, depth);
-        game->ApplyMove(r.second);
+        auto r = Minimax(this->game, depth);
+        this->game->ApplyMove(r.second);
         return r.second;
-    }
-
-    game::IBot *Clone() const
-    {
-        return new MinimaxBot(game, depth);
     }
 };
 

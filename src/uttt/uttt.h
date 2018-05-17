@@ -7,7 +7,7 @@
 
 namespace uttt {
 
-class IBoard: public game::IGame
+class IBoard
 {
     int macro;
     std::array<short, 9> micro;
@@ -18,13 +18,19 @@ class IBoard: public game::IGame
     void updateMicro(const std::array<char, 81> &other);
 
 public:
+    IBoard();
+
     IBoard(int macro, const std::array<short, 9> &micro, char next, char player);
 
-    IBoard();
+    IBoard(const IBoard &other);
 
     bool operator==(const IBoard &other) const;
 
     std::vector<game::IMove> GetPossibleMoves() const;
+
+    int GetMoveCount() const;
+
+    game::IMove GetRandomMove() const;
 
     void ApplyMove(const game::IMove &move);
 
@@ -32,16 +38,14 @@ public:
 
     game::IPlayer GetPlayerToMove() const;
 
-    IGame *Clone() const;
-
     std::size_t Hash() const;
 
-    bool Equal(const game::IGame *game) const;
+    bool Equal(const IBoard *game) const;
 
     void Print() const;
 };
 
-class UtttBot: public game::IBot
+class UtttBot: public game::IBot<IBoard>
 {
     IBoard board;
     long long mcts_iterations;
@@ -50,22 +54,21 @@ class UtttBot: public game::IBot
 
 public:
     UtttBot(long long mcts_iterations);
+    UtttBot(const UtttBot &other);
 
     game::IMove MakeMove();
 
     void SendMove(const game::IMove &move);
-
-    game::IBot *Clone() const;
 };
 
 struct Eval
 {
-    double operator()(const game::IGame *game) const;
+    double operator()(const IBoard *board) const;
 };
 
 struct EvalMcts
 {
-    double operator()(const game::IGame *game) const;
+    double operator()(const IBoard *board) const;
 };
 
 }

@@ -7,34 +7,39 @@
 
 namespace manager {
 
+template <typename IGame>
 struct Bot
 {
     long long id;
-    game::IBot *bot;
-    long long game_id;
+    game::IBot<IGame> *bot;
     double rating;
 
+    Bot(long long id, const game::IBot<IGame> *bot, double rating);
     ~Bot();
 };
 
+template <typename IGame>
 class Manager
 {
-    std::unordered_map<long long, Bot *> bots;
-    std::unordered_map<long long, std::unordered_map<long long, Bot *>> bots_by_game;
-    std::unordered_map<long long, game::IGame *> games;
+    IGame *game;
+    std::unordered_map<long long, Bot<IGame> *> bots;
 
 public:
+    Manager(const IGame *game);
+
     ~Manager();
 
-    long long AddGame(const game::IGame *game);
+    long long AddGame(const IGame *game);
 
-    long long AddBot(const game::IBot *bot, long long game_id);
+    long long AddBot(const game::IBot<IGame> *bot);
 
     double GetBotRating(long long bot_id) const;
 
     std::pair<double, double> Match(long long bot_id1, long long bot_id2, int count);
 
-    void RoundRobin(long long game_id);
+    void RoundRobin();
 };
 
 }
+
+#include <manager.hpp>

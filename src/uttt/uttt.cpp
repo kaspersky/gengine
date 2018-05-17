@@ -3,6 +3,7 @@
 #include <vector>
 #include <array>
 #include <limits>
+#include <random>
 
 #include <uttt.h>
 #include <mcts.h>
@@ -112,12 +113,16 @@ struct UtttInit
 
 static UtttInit g_UtttInit;
 
+IBoard::IBoard(): macro(0), micro({}), next(-1), player(1)
+{
+}
+
 IBoard::IBoard(int macro, const std::array<short, 9> &micro, char next, char player): macro(macro), micro(micro), next(next), player(player)
 {
     this->player = player;
 }
 
-IBoard::IBoard(): macro(0), micro({}), next(-1), player(1)
+IBoard::IBoard(const IBoard &other): macro(other.macro), micro(other.micro), next(other.next), player(other.player)
 {
 }
 
@@ -175,6 +180,22 @@ IBoard::GetPossibleMoves() const
     return moves;
 }
 
+int
+IBoard::GetMoveCount() const
+{
+    return GetPossibleMoves().size();
+}
+
+game::IMove
+IBoard::GetRandomMove() const
+{
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+
+    auto moves = GetPossibleMoves();
+    return moves[std::uniform_int_distribution<>(0, moves.size() - 1)(gen)];
+}
+
 void
 IBoard::ApplyMove(const game::IMove &move)
 {
@@ -206,9 +227,9 @@ IBoard::GetStatus() const
 {
     auto status = g_macro_board_status[macro];
     if (status == 0)
-        return game::IGame::Undecided;
+        return game::Undecided;
     if (status == 3)
-        return game::IGame::Draw;
+        return game::Draw;
     return status;
 }
 
@@ -216,12 +237,6 @@ game::IPlayer
 IBoard::GetPlayerToMove() const
 {
     return player;
-}
-
-game::IGame *
-IBoard::Clone() const
-{
-    return new IBoard(macro, micro, next, player);
 }
 
 std::size_t
@@ -234,26 +249,29 @@ IBoard::Hash() const
 }
 
 bool
-IBoard::Equal(const IGame *game) const
+IBoard::Equal(const IBoard *game) const
 {
-    const IBoard *iboard = dynamic_cast<const IBoard *>(game);
-    return *this == *iboard;
+    return *this == *game;
 }
 
-UtttBot::UtttBot(long long mcts_iterations): game::IBot(nullptr), mcts_iterations(mcts_iterations)
+UtttBot::UtttBot(long long mcts_iterations): game::IBot<IBoard>(nullptr), mcts_iterations(mcts_iterations)
 {
 }
 
-UtttBot::UtttBot(const IBoard &board, long long mcts_iterations): game::IBot(nullptr), board(board), mcts_iterations(mcts_iterations)
+UtttBot::UtttBot(const IBoard &board, long long mcts_iterations): game::IBot<IBoard>(nullptr), board(board), mcts_iterations(mcts_iterations)
+{
+}
+
+UtttBot::UtttBot(const UtttBot &other): game::IBot<IBoard>(other), board(other.board), mcts_iterations(other.mcts_iterations)
 {
 }
 
 game::IMove
 UtttBot::MakeMove()
 {
-    MCTSNode node(&board);
+    MCTSNode<IBoard> node(&board);
     for (int i = 0; i < mcts_iterations; ++i)
-        MCTS(&node);
+        MCTS<IBoard>(&node);
     double max = -1.1;
     game::IMove move = -1;
     for (auto it : node.children)
@@ -272,20 +290,13 @@ UtttBot::SendMove(const game::IMove &move)
     board.ApplyMove(move);
 }
 
-game::IBot *
-UtttBot::Clone() const
-{
-    return new UtttBot(board, mcts_iterations);
-}
-
 double
-Eval::operator()(const game::IGame *game) const
+Eval::operator()(const IBoard *board) const
 {
-    const IBoard *board = dynamic_cast<const IBoard *>(game);
     int status = board->GetStatus();
-    if (status == game::IGame::Draw)
+    if (status == game::Draw)
         return 0.0;
-    if (status != game::IGame::Undecided)
+    if (status != game::Undecided)
     {
         if (board->GetPlayerToMove() == status)
             return std::numeric_limits<double>::max();
@@ -295,21 +306,20 @@ Eval::operator()(const game::IGame *game) const
 }
 
 double
-EvalMcts::operator()(const game::IGame *game) const
+EvalMcts::operator()(const IBoard *board) const
 {
-    const IBoard *board = dynamic_cast<const IBoard *>(game);
     int status = board->GetStatus();
-    if (status == game::IGame::Draw)
+    if (status == game::Draw)
         return 0.0;
-    if (status != game::IGame::Undecided)
+    if (status != game::Undecided)
     {
         if (board->GetPlayerToMove() == status)
             return std::numeric_limits<double>::max();
         return std::numeric_limits<double>::min();
     }
-    MCTSNode node(game);
+    MCTSNode<IBoard> node(board);
     for (int i = 0; i < 100; ++i)
-        MCTS(&node);
+        MCTS<IBoard>(&node);
     double max = -1.1;
     for (auto it : node.children)
         max = std::max(max, it.second->value / it.second->total);

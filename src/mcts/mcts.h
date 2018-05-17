@@ -4,49 +4,36 @@
 
 #include <game.h>
 
-namespace std
-{
-    template<>
-    struct hash<const game::IGame *>
-    {
-        std::size_t operator()(const game::IGame *game) const
-        {
-            return game->Hash();
-        }
-    };
-
-    template<>
-    struct equal_to<const game::IGame *>
-    {
-        bool operator()(const game::IGame *game1, const game::IGame *game2) const
-        {
-            return game1->Equal(game2);
-        }
-    };
-}
-
+template <typename IGame>
 struct MCTSNode
 {
-    game::IGame *game;
+    IGame *game;
     double value;
     int total;
     std::unordered_map<game::IMove, MCTSNode *> children;
 
-    MCTSNode(const game::IGame *game);
+    MCTSNode(const IGame *game);
 
     MCTSNode(const MCTSNode &other);
 
     ~MCTSNode();
 };
 
+template <typename IGame>
 void
-MCTS(MCTSNode *root);
+MCTS(MCTSNode<IGame> *root);
 
+template <typename IGame>
 void
-MCTS01(MCTSNode *root);
+MCTS01(MCTSNode<IGame> *root);
 
+template <typename IGame>
 void
-MCTS2(MCTSNode *root);
+MCTS2(MCTSNode<IGame> *root);
 
+template <typename IGame>
 long long
-CountUnique(const MCTSNode *root);
+CountUnique(const MCTSNode<IGame> *root);
+
+#include <mcts.hpp>
+#include <mcts2.hpp>

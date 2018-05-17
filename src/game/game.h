@@ -8,15 +8,16 @@ namespace game {
 typedef int64_t IMove;
 typedef int8_t IPlayer;
 
+enum
+{
+    Undecided = -1,
+    Draw = 0,
+};
+
+#if 0
 class IGame
 {
 public:
-    enum
-    {
-        Undecided = -1,
-        Draw = 0,
-    };
-
     virtual ~IGame();
 
     virtual void ApplyMove(const IMove &move) = 0;
@@ -31,15 +32,15 @@ public:
 
     virtual IPlayer GetPlayerToMove() const = 0;
 
-    virtual IGame *Clone() const = 0;
-
     virtual std::size_t Hash() const = 0;
 
     virtual bool Equal(const IGame *game) const = 0;
 
     virtual void Print() const = 0;
 };
+#endif
 
+template <typename IGame>
 class IBot
 {
 protected:
@@ -50,11 +51,13 @@ public:
 
     virtual ~IBot();
 
+    virtual IBot *Clone() const = 0;
+
     virtual IMove MakeMove() = 0;
 
     virtual void SendMove(const IMove &move);
-
-    virtual IBot *Clone() const = 0;
 };
 
 }
+
+#include <game.hpp>
