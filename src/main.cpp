@@ -3,6 +3,7 @@
 #include <chrono>
 #include <unordered_map>
 
+#include <ttt.h>
 #include <uttt.h>
 #include <mcts.h>
 #include <manager.h>
@@ -21,7 +22,7 @@ int main()
     }
 #endif
 
-#if 1
+#if 0
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
     int iter_num = 1;
@@ -85,6 +86,40 @@ int main()
         std::cout << '\n';
     }
 #endif
+#if 1
+    auto game = new ttt::Board;
+    manager::Manager<ttt::Board> manager(game);
+
+    std::vector<game::IBot<ttt::Board> *> bots;
+    bots.emplace_back(new generic_bots::RandomBot<ttt::Board>(game));
+    bots.emplace_back(new generic_bots::FixedMctsBot<ttt::Board>(game, 1000));
+
+    std::vector<long long> bot_ids;
+    for (auto bot : bots)
+    {
+        bot_ids.emplace_back(manager.AddBot(bot));
+        delete bot;
+    }
+
+    delete game;
+
+    std::cout << "Initial ratings:";
+    for (long long id : bot_ids)
+        std::cout << ' ' << manager.GetBotRating(id);
+    std::cout << '\n';
+
+    int num_rounds = 10;
+    for (int i = 0; i < num_rounds; ++i)
+    {
+        std::cout << "Round " << i + 1 << " / " << num_rounds << '\n';
+        manager.RoundRobin();
+        std::cout << "New ratings:";
+        for (long long id : bot_ids)
+            std::cout << ' ' << manager.GetBotRating(id);
+        std::cout << '\n';
+    }
+#endif
+
 #if 0
     auto game = new uttt::IBoard;
     MCTSNode<uttt::IBoard> node(game);

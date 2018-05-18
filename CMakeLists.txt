@@ -17,5 +17,5 @@ if (LOGGING)
 endif (LOGGING)
 
 add_subdirectory(src)
-add_subdirectory(src/game)
 add_subdirectory(src/uttt)
+add_subdirectory(src/ttt)

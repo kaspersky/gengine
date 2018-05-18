@@ -54,7 +54,6 @@ public:
 template <typename IGame>
 class RandomBot: public game::IBot<IGame>
 {
-    IGame *game;
 public:
     RandomBot(const IGame *game);
 

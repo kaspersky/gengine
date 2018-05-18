@@ -11,15 +11,15 @@ template <typename IGame>
 game::IBot<IGame> *
 RandomBot<IGame>::Clone() const
 {
-    return new RandomBot(game);
+    return new RandomBot(this->game);
 }
 
 template <typename IGame>
 game::IMove
 RandomBot<IGame>::MakeMove()
 {
-    auto move = game->GetRandomMove();
-    game->ApplyMove(move);
+    auto move = this->game->GetRandomMove();
+    this->game->ApplyMove(move);
     return move;
 }
 
