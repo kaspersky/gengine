@@ -24,6 +24,8 @@ public:
 
     IBoard(const IBoard &other);
 
+    bool operator==(const IBoard &other) const;
+
     std::vector<game::IMove> GetPossibleMoves() const;
 
     int GetMoveCount() const;
@@ -35,6 +37,8 @@ public:
     int GetStatus() const;
 
     game::IPlayer GetPlayerToMove() const;
+
+    std::size_t Hash() const;
 
     void Print() const;
 };
@@ -65,4 +69,15 @@ struct EvalMcts
     double operator()(const IBoard *board) const;
 };
 
+}
+
+namespace std {
+    template <>
+    struct hash<uttt::IBoard>
+    {
+        std::size_t operator()(const uttt::IBoard &board) const
+        {
+            return board.Hash();
+        }
+    };
 }

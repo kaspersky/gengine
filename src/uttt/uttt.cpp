@@ -126,6 +126,22 @@ IBoard::IBoard(const IBoard &other): macro(other.macro), micro(other.micro), nex
 {
 }
 
+bool
+IBoard::operator==(const IBoard &other) const
+{
+    return macro == other.macro && micro == other.micro && next == other.next && player == other.player;
+}
+
+std::size_t
+IBoard::Hash() const
+{
+    std::size_t result = macro;
+    for (auto mi : micro)
+        result = (result << 1) ^ mi;
+    result = (result << 1) ^ next;
+    return (result << 1) ^ player;
+}
+
 void
 IBoard::Print() const
 {

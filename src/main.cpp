@@ -146,10 +146,15 @@ int main()
     }
 #endif
 #if 1
-    auto t1 = std::chrono::high_resolution_clock::now();
-    auto r = game::Count<ttt::Board>(11);
-    auto t2 = std::chrono::high_resolution_clock::now();
-    std::cout << "Count: " << r.first << " / " << r.second << '\n';
-    std::cout << "Duration (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
+    for (int i = 0; i < 8; ++i)
+    {
+        std::cout << "Working on depth: " << i + 1 << '\n';
+        auto t1 = std::chrono::high_resolution_clock::now();
+        auto r = game::Count<uttt::IBoard>(i);
+        auto t2 = std::chrono::high_resolution_clock::now();
+        std::cout << "Count: " << r.first << " / " << r.second << '\n';
+        long long millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+        std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds\n";
+    }
 #endif
 }
