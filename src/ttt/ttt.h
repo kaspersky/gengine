@@ -17,6 +17,8 @@ class Board
 public:
     Board();
 
+    bool operator==(const Board &other) const;
+
     int GetStatus() const;
 
     void ApplyMove(const game::IMove &move);
@@ -29,34 +31,20 @@ public:
 
     game::IPlayer GetPlayerToMove() const;
 
+    std::size_t Hash() const;
+
     void Print() const;
 };
 
-#if 0
-    class IGame
+}
+
+namespace std {
+    template <>
+    struct hash<ttt::Board>
     {
-    public:
-        virtual ~IGame();
-
-        virtual void ApplyMove(const IMove &move) = 0;
-
-        virtual std::vector<IMove> GetPossibleMoves() const = 0;
-
-        virtual int GetMoveCount() const;
-
-        virtual IMove GetRandomMove() const;
-
-        virtual int GetStatus() const = 0;
-
-        virtual IPlayer GetPlayerToMove() const = 0;
-
-        virtual std::size_t Hash() const = 0;
-
-        virtual bool Equal(const IGame *game) const = 0;
-
-        virtual void Print() const = 0;
+        std::size_t operator()(const ttt::Board &board) const
+        {
+            return board.Hash();
+        }
     };
-#endif
-
-
 }

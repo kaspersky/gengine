@@ -58,6 +58,9 @@ public:
     virtual void SendMove(const IMove &move);
 };
 
+template <typename IGame>
+std::pair<long long, long long> Count(int depth);
+
 }
 
 #include <game.hpp>

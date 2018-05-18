@@ -5,7 +5,8 @@
 
 static int
 GetStatus(const ttt::TBoard &board)
-{
+{
+
     for (int i = 0; i < 3; ++i)
     {
         if (board[i][1] == board[i][0] && board[i][1] == board[i][2] && board[i][1] != 0)
@@ -22,11 +23,16 @@ GetStatus(const ttt::TBoard &board)
     return game::Draw;
 }
 
-
 namespace ttt {
 
 Board::Board(): board{}, player(1)
 {
+}
+
+bool
+Board::operator==(const Board &other) const
+{
+    return board == other.board && player == other.player;
 }
 
 int
@@ -54,7 +60,8 @@ Board::GetPossibleMoves() const
 }
 
 game::IMove
-Board::GetRandomMove() const
+Board::GetRandomMove() const
+
 {
     static std::random_device rd;
     static std::mt19937 gen(rd());
@@ -73,6 +80,16 @@ game::IPlayer
 Board::GetPlayerToMove() const
 {
     return player;
+}
+
+std::size_t
+Board::Hash() const
+{
+    std::size_t result = 0;
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            result = (result << 1) ^ board[i][j];
+    return (result << 1) ^ player;
 }
 
 void

@@ -86,7 +86,7 @@ int main()
         std::cout << '\n';
     }
 #endif
-#if 1
+#if 0
     auto game = new ttt::Board;
     manager::Manager<ttt::Board> manager(game);
 
@@ -144,5 +144,12 @@ int main()
             std::cout << "Unique positions: " << CountUnique(&node) << '\n';
         }
     }
+#endif
+#if 1
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto r = game::Count<ttt::Board>(11);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "Count: " << r.first << " / " << r.second << '\n';
+    std::cout << "Duration (ms): " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
 #endif
 }
