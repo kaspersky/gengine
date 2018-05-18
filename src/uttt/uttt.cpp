@@ -126,12 +126,6 @@ IBoard::IBoard(const IBoard &other): macro(other.macro), micro(other.micro), nex
 {
 }
 
-bool
-IBoard::operator==(const IBoard &other) const
-{
-    return macro == other.macro && micro == other.micro && next == other.next;
-}
-
 void
 IBoard::Print() const
 {
@@ -237,21 +231,6 @@ game::IPlayer
 IBoard::GetPlayerToMove() const
 {
     return player;
-}
-
-std::size_t
-IBoard::Hash() const
-{
-    std::size_t ret = macro;
-    for (auto n : micro)
-        ret = (ret << 1) ^ n;
-    return (ret << 1) ^ next;
-}
-
-bool
-IBoard::Equal(const IBoard *game) const
-{
-    return *this == *game;
 }
 
 UtttBot::UtttBot(long long mcts_iterations): game::IBot<IBoard>(nullptr), mcts_iterations(mcts_iterations)

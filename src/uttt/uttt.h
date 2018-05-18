@@ -24,8 +24,6 @@ public:
 
     IBoard(const IBoard &other);
 
-    bool operator==(const IBoard &other) const;
-
     std::vector<game::IMove> GetPossibleMoves() const;
 
     int GetMoveCount() const;
@@ -37,10 +35,6 @@ public:
     int GetStatus() const;
 
     game::IPlayer GetPlayerToMove() const;
-
-    std::size_t Hash() const;
-
-    bool Equal(const IBoard *game) const;
 
     void Print() const;
 };
