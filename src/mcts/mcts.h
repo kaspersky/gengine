@@ -29,11 +29,11 @@ MCTS01(MCTSNode<IGame> *root);
 
 template <typename IGame>
 void
-MCTS2(MCTSNode<IGame> *root);
+MCTS_parallel(MCTSNode<IGame> *root);
 
 template <typename IGame>
 long long
 CountUnique(const MCTSNode<IGame> *root);
 
 #include <mcts.hpp>
-#include <mcts2.hpp>
+#include <mcts_parallel.hpp>
