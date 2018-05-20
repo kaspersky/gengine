@@ -54,15 +54,14 @@ MCTS_parallel(MCTSNode<IGame> *root)
 
         nodes.push_back(new_node);
 
-        IGame *game = new IGame(*new_node->game);
-        int status = game->GetStatus();
+        IGame game(*new_node->game);
+        int status = game.GetStatus();
         while (status == game::Undecided)
         {
-            auto m = game->GetRandomMove();
-            game->ApplyMove(m);
-            status = game->GetStatus();
+            auto m = game.GetRandomMove();
+            game.ApplyMove(m);
+            status = game.GetStatus();
         }
-        delete game;
 
         ++nodes[0]->total;
         for (unsigned i = 1; i < nodes.size(); ++i)
