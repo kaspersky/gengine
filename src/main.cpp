@@ -25,25 +25,25 @@ int main()
 #if 1
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
-    int iter_num = 100;
+    int iter_num = 1;
     for (int iter = 0; iter < iter_num; ++iter)
     {
         std::cout << "Iteration: " << iter << '\n';
 
-        auto game = new uttt::IBoard;
-        MCTSNode<uttt::IBoard> node(game);
-        delete game;
+        uttt::IBoard game;
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < 1; ++i)
-            MCTS_cache(&node);
+        auto results = MCTS_parallel(game, 100000);
         auto t2 = std::chrono::high_resolution_clock::now();
-        std::cout << "MCTS done: " << node.total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
+        long long total = 0;
+        for (auto it : results)
+            total += it.second.second;
+        std::cout << "MCTS done: " << total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
 
-        for (auto it : node.children)
+        for (auto it : results)
         {
-            um[it.first].first += it.second->value / it.second->total;
-            um[it.first].second += it.second->total;
+            um[it.first].first += it.second.first / it.second.second;
+            um[it.first].second += it.second.second;
         }
     }
     for (auto it : um)

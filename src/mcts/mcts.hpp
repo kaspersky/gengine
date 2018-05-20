@@ -4,16 +4,13 @@
 #include <mcts.h>
 
 template <typename IGame>
-MCTSNode<IGame>::MCTSNode(const IGame *game): game(new IGame(*game)), value(0.0), total(0)
+MCTSNode<IGame>::MCTSNode(const IGame &game): game(new IGame(game)), value(0.0), total(0)
 {
 }
 
 template <typename IGame>
-MCTSNode<IGame>::MCTSNode(const MCTSNode &other): game(nullptr), value(other.value), total(other.total)
+MCTSNode<IGame>::MCTSNode(const MCTSNode &other): game(new IGame(other.game)), value(other.value), total(other.total)
 {
-    if (other.game != nullptr)
-        game = new IGame(other.game);
-
     for (auto it : other.children)
         children[it.first] = new MCTSNode(*it.second);
 }
@@ -28,7 +25,7 @@ MCTSNode<IGame>::~MCTSNode()
 
 template <typename IGame>
 void
-MCTS(MCTSNode<IGame> *root)
+MCTS_(MCTSNode<IGame> *root)
 {
     MCTSNode<IGame> *node = root;
     std::vector<MCTSNode<IGame> *> nodes = {root};
@@ -62,7 +59,7 @@ MCTS(MCTSNode<IGame> *root)
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
-            MCTSNode<IGame> *new_node = new MCTSNode<IGame>(node->game);
+            MCTSNode<IGame> *new_node = new MCTSNode<IGame>(*node->game);
             new_node->game->ApplyMove(m);
             node->children[m] = new_node;
             node = new_node;
@@ -96,8 +93,22 @@ MCTS(MCTSNode<IGame> *root)
 }
 
 template <typename IGame>
+std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+MCTS(const IGame &game, long long iterations)
+{
+    MCTSNode<IGame> root(game);
+    for (long long i = 0; i < iterations; ++i)
+        MCTS_(&root);
+
+    std::vector<std::pair<game::IMove, std::pair<double, long long>>> results;
+    for (auto it : root.children)
+        results.emplace_back(it.first, std::pair<double, long long>{it.second->value, it.second->total});
+    return results;
+}
+
+template <typename IGame>
 void
-MCTS01(MCTSNode<IGame> *root)
+MCTS01_(MCTSNode<IGame> *root)
 {
     MCTSNode<IGame> *node = root;
     std::vector<MCTSNode<IGame> *> nodes = {root};
@@ -131,7 +142,7 @@ MCTS01(MCTSNode<IGame> *root)
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
-            MCTSNode<IGame> *new_node = new MCTSNode<IGame>(node->game);
+            MCTSNode<IGame> *new_node = new MCTSNode<IGame>(*node->game);
             new_node->game->ApplyMove(m);
             node->children[m] = new_node;
             node = new_node;
@@ -160,6 +171,20 @@ MCTS01(MCTSNode<IGame> *root)
         else if (nodes[i - 1]->game->GetPlayerToMove() == status)
             nodes[i]->value += 1.0;
     }
+}
+
+template <typename IGame>
+std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+MCTS01(const IGame &game, long long iterations)
+{
+    MCTSNode<IGame> root(game);
+    for (long long i = 0; i < iterations; ++i)
+        MCTS01_(&root);
+
+    std::vector<std::pair<game::IMove, std::pair<double, long long>>> results;
+    for (auto it : root.children)
+        results.emplace_back(it.first, {it.second->value, it.second->total});
+    return results;
 }
 
 template <typename IGame>

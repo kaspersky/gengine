@@ -100,26 +100,22 @@ MCTS_cache_(std::unordered_map<IGame *, GameData *> &cache, const IGame &root_ga
 }
 
 template <typename IGame>
-void
-MCTS_cache(MCTSNode<IGame> *root)
+std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+MCTS_cache(const IGame &game, long long iterations)
 {
     std::unordered_map<IGame *, GameData *> cache;
-    auto game = new IGame(*root->game);
+    auto game_copy = new IGame(game);
     auto game_data = new GameData;
-    cache[game] = game_data;
-    for (int i = 0; i < 1000000; ++i)
-        MCTS_cache_(cache, *game, game_data);
-    root->value = game_data->value;
-    root->total = game_data->total;
+    cache[game_copy] = game_data;
+    for (long long i = 0; i < iterations; ++i)
+        MCTS_cache_(cache, *game_copy, game_data);
+    std::vector<std::pair<game::IMove, std::pair<double, long long>>> results;
     for (auto it : game_data->children)
-    {
-        root->children[it.first] = new MCTSNode<IGame>(game);
-        root->children[it.first]->value = it.second->value;
-        root->children[it.first]->total = it.second->total;
-    }
+        results.push_back({it.first, {it.second->value, it.second->total}});
     for (auto it : cache)
     {
         delete it.first;
         delete it.second;
     }
+    return results;
 }

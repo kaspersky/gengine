@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <vector>
 
 #include <game.h>
 
@@ -9,10 +10,10 @@ struct MCTSNode
 {
     IGame *game;
     double value;
-    int total;
+    long long total;
     std::unordered_map<game::IMove, MCTSNode *> children;
 
-    MCTSNode(const IGame *game);
+    MCTSNode(const IGame &game);
 
     MCTSNode(const MCTSNode &other);
 
@@ -20,20 +21,20 @@ struct MCTSNode
 };
 
 template <typename IGame>
-void
-MCTS(MCTSNode<IGame> *root);
+std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+MCTS(const IGame &game, long long iterations);
 
 template <typename IGame>
-void
-MCTS01(MCTSNode<IGame> *root);
+std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+MCTS01(const IGame &game, long long iterations);
 
 template <typename IGame>
-void
-MCTS_parallel(MCTSNode<IGame> *root);
+std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+MCTS_parallel(const IGame &game, long long iterations);
 
 template <typename IGame>
-void
-MCTS_cache(MCTSNode<IGame> *root);
+std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+MCTS_cache(const IGame &game, long long iterations);
 
 template <typename IGame>
 long long

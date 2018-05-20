@@ -264,14 +264,12 @@ UtttBot::UtttBot(const UtttBot &other): game::IBot<IBoard>(other), board(other.b
 game::IMove
 UtttBot::MakeMove()
 {
-    MCTSNode<IBoard> node(&board);
-    for (int i = 0; i < mcts_iterations; ++i)
-        MCTS<IBoard>(&node);
+    auto results = MCTS<IBoard>(board, mcts_iterations);
     double max = -1.1;
     game::IMove move = -1;
-    for (auto it : node.children)
+    for (auto it : results)
     {
-        auto v = it.second->value / it.second->total;
+        auto v = it.second.first / it.second.second;
         if (v > max)
             max = v, move = it.first;
     }
@@ -312,12 +310,10 @@ EvalMcts::operator()(const IBoard *board) const
             return std::numeric_limits<double>::max();
         return std::numeric_limits<double>::min();
     }
-    MCTSNode<IBoard> node(board);
-    for (int i = 0; i < 100; ++i)
-        MCTS<IBoard>(&node);
+    auto results = MCTS<IBoard>(*board, 100);
     double max = -1.1;
-    for (auto it : node.children)
-        max = std::max(max, it.second->value / it.second->total);
+    for (auto it : results)
+        max = std::max(max, it.second.first / it.second.second);
     return max;
 }
 

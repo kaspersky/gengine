@@ -6,7 +6,7 @@
 
 template <typename IGame>
 void
-MCTS_parallel(MCTSNode<IGame> *root)
+MCTS_parallel_(MCTSNode<IGame> *root)
 {
     MCTSNode<IGame> *node = root;
     std::vector<MCTSNode<IGame> *> nodes = {root};
@@ -48,7 +48,7 @@ MCTS_parallel(MCTSNode<IGame> *root)
     auto moves = node->game->GetPossibleMoves();
     for (auto m : moves)
     {
-        auto new_node = new MCTSNode<IGame>(node->game);
+        auto new_node = new MCTSNode<IGame>(*node->game);
         new_node->game->ApplyMove(m);
         node->children[m] = new_node;
 
@@ -77,4 +77,18 @@ MCTS_parallel(MCTSNode<IGame> *root)
 
         nodes.pop_back();
     }
+}
+
+template <typename IGame>
+std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+MCTS_parallel(const IGame &game, long long iterations)
+{
+    MCTSNode<IGame> root(game);
+    for (long long i = 0; i < iterations; ++i)
+        MCTS_parallel_(&root);
+
+    std::vector<std::pair<game::IMove, std::pair<double, long long>>> results;
+    for (auto it : root.children)
+        results.emplace_back(it.first, std::pair<double, long long>{it.second->value, it.second->total});
+    return results;
 }
