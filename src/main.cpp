@@ -25,7 +25,7 @@ int main()
 #if 1
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
-    int iter_num = 1;
+    int iter_num = 100;
     for (int iter = 0; iter < iter_num; ++iter)
     {
         std::cout << "Iteration: " << iter << '\n';
@@ -35,8 +35,8 @@ int main()
         delete game;
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < 1000000; ++i)
-            MCTS_parallel(&node);
+        for (int i = 0; i < 1; ++i)
+            MCTS_cache(&node);
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "MCTS done: " << node.total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
 

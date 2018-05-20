@@ -32,8 +32,13 @@ void
 MCTS_parallel(MCTSNode<IGame> *root);
 
 template <typename IGame>
+void
+MCTS_cache(MCTSNode<IGame> *root);
+
+template <typename IGame>
 long long
 CountUnique(const MCTSNode<IGame> *root);
 
 #include <mcts.hpp>
 #include <mcts_parallel.hpp>
+#include <mcts_cache.hpp>
