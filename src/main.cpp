@@ -15,7 +15,7 @@ int main()
     uttt::IBoard board;
     board.Print();
     std::vector<game::IMove> moves;
-    while (board.GetStatus() == game::IGame::Undecided)
+    while (board.GetStatus() == game::Undecided)
     {
         board.ApplyMove(board.GetRandomMove());
         board.Print();
@@ -56,8 +56,8 @@ int main()
     manager::Manager<uttt::IBoard> manager(game);
 
     std::vector<game::IBot<uttt::IBoard> *> bots;
-    bots.emplace_back(new generic_bots::MinimaxBot<uttt::IBoard, uttt::EvalMcts>(game, 1));
-    bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard>(game, 1000));
+    bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_cache>(game, 10000));
+    bots.emplace_back(new uttt::UtttBot(10000));
 
     std::vector<long long> bot_ids;
     for (auto bot : bots)
@@ -73,7 +73,7 @@ int main()
         std::cout << ' ' << manager.GetBotRating(id);
     std::cout << '\n';
 
-    int num_rounds = 2;
+    int num_rounds = 100;
     for (int i = 0; i < num_rounds; ++i)
     {
         std::cout << "Round " << i + 1 << " / " << num_rounds << '\n';
@@ -116,32 +116,6 @@ int main()
         for (long long id : bot_ids)
             std::cout << ' ' << manager.GetBotRating(id);
         std::cout << '\n';
-    }
-#endif
-
-#if 0
-    auto game = new uttt::IBoard;
-    MCTSNode<uttt::IBoard> node(game);
-    delete game;
-
-    auto t1 = std::chrono::high_resolution_clock::now();
-    for (long long iteration = 0; ; ++iteration)
-    {
-        MCTS_parallel(&node);
-        if ((iteration + 1) % 100000 == 0)
-        {
-            auto t2 = std::chrono::high_resolution_clock::now();
-            std::cout << "Iterations " << iteration + 1 << ": " << node.total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count() << " seconds\n";
-            std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
-            for (auto it : node.children)
-                best.push_back({it.first, {it.second->value / it.second->total, it.second->total}});
-            std::sort(std::begin(best), std::end(best), [](const std::pair<game::IMove, std::pair<double, int>> &p1, const std::pair<game::IMove, std::pair<double, int>> &p2) {
-                return p1.second.first > p2.second.first;
-            });
-            for (auto p : best)
-                std::cout << "Move " << p.first << ": " << p.second.first << ' ' << p.second.second << '\n';
-            std::cout << "Unique positions: " << CountUnique(&node) << '\n';
-        }
     }
 #endif
 

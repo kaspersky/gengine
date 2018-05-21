@@ -5,31 +5,29 @@
 
 namespace generic_bots {
 
-template <typename IGame>
-FixedMctsBot<IGame>::FixedMctsBot(const IGame *game, long long num_iterations): game::IBot<IGame>(game), num_iterations(num_iterations)
+template <typename IGame, std::vector<std::pair<game::IMove, std::pair<double, long long>>>(*MCTS)(const IGame &, long long)>
+FixedMctsBot<IGame, MCTS>::FixedMctsBot(const IGame *game, long long num_iterations): game::IBot<IGame>(game), num_iterations(num_iterations)
 {
 }
 
-template <typename IGame>
+template <typename IGame, std::vector<std::pair<game::IMove, std::pair<double, long long>>>(*MCTS)(const IGame &, long long)>
 game::IBot<IGame> *
-FixedMctsBot<IGame>::Clone() const
+FixedMctsBot<IGame, MCTS>::Clone() const
 {
     return new FixedMctsBot(this->game, num_iterations);
 }
 
-template <typename IGame>
+template <typename IGame, std::vector<std::pair<game::IMove, std::pair<double, long long>>>(*MCTS)(const IGame &, long long)>
 game::IMove
-FixedMctsBot<IGame>::MakeMove()
+FixedMctsBot<IGame, MCTS>::MakeMove()
 {
-    MCTSNode<IGame> node(this->game);
-    for (int i = 0; i < num_iterations; ++i)
-        MCTS(&node);
+    auto results = MCTS(*this->game, num_iterations);
 
     double max = -1.1;
     game::IMove move = -1;
-    for (auto it : node.children)
+    for (auto it : results)
     {
-        auto v = it.second->value / it.second->total;
+        auto v = it.second.first / it.second.second;
         if (v > max)
             max = v, move = it.first;
     }

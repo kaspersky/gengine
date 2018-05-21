@@ -57,6 +57,8 @@ public:
     game::IMove MakeMove();
 
     void SendMove(const game::IMove &move);
+
+    game::IBot<IBoard> *Clone() const;
 };
 
 struct Eval

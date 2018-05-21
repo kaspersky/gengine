@@ -283,6 +283,12 @@ UtttBot::SendMove(const game::IMove &move)
     board.ApplyMove(move);
 }
 
+game::IBot<IBoard> *
+UtttBot::Clone() const
+{
+    return new UtttBot(*this);
+}
+
 double
 Eval::operator()(const IBoard *board) const
 {
