@@ -32,7 +32,33 @@ Board::Board(): board{}, player(1)
 bool
 Board::operator==(const Board &other) const
 {
-    return board == other.board && player == other.player;
+    if (player != other.player)
+        return false;
+    if (board == other.board)
+        return true;
+    TBoard tboard(board);
+    std::swap(tboard[0][0], tboard[0][2]);
+    std::swap(tboard[1][0], tboard[1][2]);
+    std::swap(tboard[2][0], tboard[2][2]);
+    if (tboard == other.board)
+        return true;
+    tboard = TBoard(board);
+    std::swap(tboard[0][0], tboard[2][0]);
+    std::swap(tboard[0][1], tboard[2][1]);
+    std::swap(tboard[0][2], tboard[2][2]);
+    if (tboard == other.board)
+        return true;
+    tboard = TBoard(board);
+    std::swap(tboard[0][1], tboard[1][0]);
+    std::swap(tboard[0][2], tboard[2][0]);
+    std::swap(tboard[1][2], tboard[2][1]);
+    if (tboard == other.board)
+        return true;
+    tboard = TBoard(board);
+    std::swap(tboard[0][1], tboard[1][2]);
+    std::swap(tboard[1][0], tboard[2][1]);
+    std::swap(tboard[0][0], tboard[2][2]);
+    return tboard == other.board;
 }
 
 int
@@ -88,7 +114,7 @@ Board::Hash() const
     std::size_t result = 0;
     for (int i = 0; i < 3; ++i)
         for (int j = 0; j < 3; ++j)
-            result = (result << 1) ^ board[i][j];
+            result += board[i][j];
     return (result << 1) ^ player;
 }
 

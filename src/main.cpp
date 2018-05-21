@@ -30,10 +30,8 @@ int main()
     {
         std::cout << "Iteration: " << iter << '\n';
 
-        uttt::IBoard game;
-
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto results = MCTS_cache(game, 100000);
+        auto results = MCTS_cache(uttt::IBoard(), 100000);
         auto t2 = std::chrono::high_resolution_clock::now();
         long long total = 0;
         for (auto it : results)

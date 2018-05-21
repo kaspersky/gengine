@@ -1,50 +1,55 @@
 #include <vector>
-#include <unordered_map>
+#include <unordered_set>
 #include <cmath>
 
 #include <mcts.h>
 
+template <typename IGame>
 struct GameData
 {
+    IGame *game;
     double value;
     long long total;
     std::vector<std::pair<game::IMove, GameData *>> children;
 
-    GameData(): value(0.0), total(0)
+    GameData(IGame *game): game(game), value(0.0), total(0)
     {
+    }
+
+    ~GameData()
+    {
+        delete game;
     }
 };
 
 template <typename IGame>
-struct GameHash
+struct GameDataHash
 {
-    std::size_t operator()(IGame *game) const
+    std::size_t operator()(GameData<IGame> *game_data) const
     {
-        return game->Hash();
+        return game_data->game->Hash();
     }
 };
 
 template <typename IGame>
-struct GameEqual
+struct GameDataEqual
 {
-    bool operator()(IGame *game1, IGame *game2) const
+    bool operator()(const GameData<IGame> *game_data1, const GameData<IGame> *game_data2) const
     {
-        return *game1 == *game2;
+        return *game_data1->game == *game_data2->game;
     }
 };
 
 template <typename IGame>
 void
-MCTS_cache_(std::unordered_map<IGame *, GameData *, GameHash<IGame>, GameEqual<IGame>> &cache, const IGame &root_game, GameData *game_data)
+MCTS_cache_(std::unordered_set<GameData<IGame> *, GameDataHash<IGame>, GameDataEqual<IGame>> &cache, GameData<IGame> *root_game_data)
 {
-    IGame rg(root_game);
-    game::IPlayer player_to_move = rg.GetPlayerToMove();
-    auto node = game_data;
-    std::vector<GameData *> nodes = {node};
+    game::IPlayer player_to_move = root_game_data->game->GetPlayerToMove();
+    auto node = root_game_data;
+    std::vector<GameData<IGame> *> nodes = {node};
     while (!node->children.empty())
     {
-        GameData *child = nullptr;
-        game::IMove move = -1;
+        GameData<IGame> *child = nullptr;
         double min = 0.0;
         for (auto it : node->children)
         {
@@ -54,16 +59,14 @@ MCTS_cache_(std::unordered_map<IGame *, GameData *, GameHash<IGame>, GameEqual<I
             {
                 min = p;
                 child = it.second;
-                move = it.first;
             }
         }
         node = child;
-        rg.ApplyMove(move);
         nodes.push_back(node);
     }
 
     game::IPlayer player = player_to_move;
-    int status = rg.GetStatus();
+    int status = node->game->GetStatus();
     if (status != game::Undecided)
     {
         ++nodes[0]->total;
@@ -80,31 +83,31 @@ MCTS_cache_(std::unordered_map<IGame *, GameData *, GameHash<IGame>, GameEqual<I
         return;
     }
 
-    auto moves = rg.GetPossibleMoves();
-    std::unordered_map<IGame *, game::IMove, GameHash<IGame>, GameEqual<IGame>> positions;
+    auto moves = node->game->GetPossibleMoves();
+    std::unordered_map<GameData<IGame> *, game::IMove, GameDataHash<IGame>, GameDataEqual<IGame>> positions;
     for (auto m : moves)
     {
-        auto new_game = new IGame(rg);
-        new_game->ApplyMove(m);
-        if (positions.find(new_game) != positions.end())
+        auto new_game_data = new GameData<IGame>(new IGame(*node->game));
+        new_game_data->game->ApplyMove(m);
+        if (positions.find(new_game_data) != positions.end())
         {
-            delete new_game;
+            delete new_game_data;
             continue;
         }
-        positions[new_game] = m;
+        positions[new_game_data] = m;
     }
     for (auto p : positions)
     {
-        GameData *new_node = nullptr;
+        GameData<IGame> *new_node = nullptr;
         auto it = cache.find(p.first);
         if (it == cache.end())
         {
-            new_node = new GameData;
-            cache[p.first] = new_node;
+            new_node = p.first;
+            cache.insert(new_node);
         }
         else
         {
-            new_node = it->second;
+            new_node = *it;
             delete p.first;
         }
 
@@ -112,7 +115,7 @@ MCTS_cache_(std::unordered_map<IGame *, GameData *, GameHash<IGame>, GameEqual<I
 
         nodes.push_back(new_node);
 
-        IGame game(rg);
+        IGame game(*new_node->game);
         int status = game.GetStatus();
         while (status == game::Undecided)
         {
@@ -142,19 +145,15 @@ template <typename IGame>
 std::vector<std::pair<game::IMove, std::pair<double, long long>>>
 MCTS_cache(const IGame &game, long long iterations)
 {
-    std::unordered_map<IGame *, GameData *, GameHash<IGame>, GameEqual<IGame>> cache;
-    auto game_copy = new IGame(game);
-    auto game_data = new GameData;
-    cache[game_copy] = game_data;
+    std::unordered_set<GameData<IGame> *, GameDataHash<IGame>, GameDataEqual<IGame>> cache;
+    auto game_data = new GameData<IGame>(new IGame(game));
+    cache.insert(game_data);
     for (long long i = 0; i < iterations; ++i)
-        MCTS_cache_(cache, *game_copy, game_data);
+        MCTS_cache_(cache, game_data);
     std::vector<std::pair<game::IMove, std::pair<double, long long>>> results;
     for (auto it : game_data->children)
         results.push_back({it.first, {it.second->value, it.second->total}});
     for (auto it : cache)
-    {
-        delete it.first;
-        delete it.second;
-    }
+        delete it;
     return results;
 }
