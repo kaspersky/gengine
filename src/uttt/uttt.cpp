@@ -8,44 +8,75 @@
 #include <uttt.h>
 #include <mcts.h>
 
-namespace uttt {
+typedef std::array<std::array<int, 3>, 3> TBoard;
 
 static short g_factors[9] = {1, 3, 9, 27, 81, 243, 729, 2187, 6561};
 static int g_factors4[9] = {1, 4, 16, 64, 256, 1024, 4096, 16384, 65536};
+static int8_t g_next_rotated_clockwise_90[9] = {2, 5, 8, 1, 4, 7, 0, 3, 6};
+static int8_t g_next_mirrored_vertical[9] = {2, 1, 0, 5, 4, 3, 8, 7, 6};
 static char g_board_status[19683];
-static std::vector<char> g_moves[19683];
 static char g_macro_board_status[262144];
+static std::vector<char> g_moves[19683];
+static int g_rotated_clockwise_90[19683];
+static int g_mirrored_vertical[19683];
+static int g_macro_rotated_clockwise_90[262144];
+static int g_macro_mirrored_vertical[262144];
+static std::size_t g_hash[19683];
+static std::size_t g_hash4[262144];
 
-static void
-makeBoard(char board[3][3], short k)
+static TBoard
+makeBoard(short k)
 {
-    board[0][0] = (k / g_factors[0]) % 3;
-    board[0][1] = (k / g_factors[1]) % 3;
-    board[0][2] = (k / g_factors[2]) % 3;
-    board[1][0] = (k / g_factors[3]) % 3;
-    board[1][1] = (k / g_factors[4]) % 3;
-    board[1][2] = (k / g_factors[5]) % 3;
-    board[2][0] = (k / g_factors[6]) % 3;
-    board[2][1] = (k / g_factors[7]) % 3;
-    board[2][2] = (k / g_factors[8]) % 3;
+    return {k / g_factors[0] % 3, k / g_factors[1] % 3, k / g_factors[2] % 3,
+            k / g_factors[3] % 3, k / g_factors[4] % 3, k / g_factors[5] % 3,
+            k / g_factors[6] % 3, k / g_factors[7] % 3, k / g_factors[8] % 3};
+}
+
+static TBoard
+makeBoard4(int k)
+{
+    return {k / g_factors4[0] % 4, k / g_factors4[1] % 4, k / g_factors4[2] % 4,
+            k / g_factors4[3] % 4, k / g_factors4[4] % 4, k / g_factors4[5] % 4,
+            k / g_factors4[6] % 4, k / g_factors4[7] % 4, k / g_factors4[8] % 4};
+}
+
+static int
+TBoardToInt(const TBoard &board)
+{
+    return board[0][0] * g_factors[0] + board[0][1] * g_factors[1] + board[0][2] * g_factors[2] +
+           board[1][0] * g_factors[3] + board[1][1] * g_factors[4] + board[1][2] * g_factors[5] +
+           board[2][0] * g_factors[6] + board[2][1] * g_factors[7] + board[2][2] * g_factors[8];
+}
+
+static int
+TBoardToInt4(const TBoard &board)
+{
+    return board[0][0] * g_factors4[0] + board[0][1] * g_factors4[1] + board[0][2] * g_factors4[2] +
+           board[1][0] * g_factors4[3] + board[1][1] * g_factors4[4] + board[1][2] * g_factors4[5] +
+           board[2][0] * g_factors4[6] + board[2][1] * g_factors4[7] + board[2][2] * g_factors4[8];
 }
 
 static void
-makeBoard4(char board[3][3], int k)
+RotateClockWise90(TBoard &board)
 {
-    board[0][0] = (k / g_factors4[0]) % 4;
-    board[0][1] = (k / g_factors4[1]) % 4;
-    board[0][2] = (k / g_factors4[2]) % 4;
-    board[1][0] = (k / g_factors4[3]) % 4;
-    board[1][1] = (k / g_factors4[4]) % 4;
-    board[1][2] = (k / g_factors4[5]) % 4;
-    board[2][0] = (k / g_factors4[6]) % 4;
-    board[2][1] = (k / g_factors4[7]) % 4;
-    board[2][2] = (k / g_factors4[8]) % 4;
+    std::swap(board[0][1], board[1][0]);
+    std::swap(board[1][0], board[2][1]);
+    std::swap(board[2][1], board[1][2]);
+    std::swap(board[0][0], board[2][0]);
+    std::swap(board[2][0], board[2][2]);
+    std::swap(board[2][2], board[0][2]);
 }
 
-static char
-getBoardStatus(const char board[3][3])
+static void
+MirrorVertical(TBoard &board)
+{
+    std::swap(board[0][0], board[0][2]);
+    std::swap(board[1][0], board[1][2]);
+    std::swap(board[2][0], board[2][2]);
+}
+
+static uint8_t
+getBoardStatus(const TBoard &board)
 {
     for (int i = 0; i < 3; i++)
     {
@@ -65,7 +96,7 @@ getBoardStatus(const char board[3][3])
 }
 
 static char
-getMacroBoardStatus(const char board[3][3])
+getMacroBoardStatus(const TBoard &board)
 {
     for (int i = 0; i < 3; i++)
     {
@@ -88,58 +119,110 @@ struct UtttInit
 {
     UtttInit()
     {
-        char board[3][3];
         for (short i = 0; i < 19683; i++)
         {
-            makeBoard(board, i);
-            g_board_status[i] = getBoardStatus(board);
-        }
-
-        for (short i = 0; i < 19683; i++)
+            g_board_status[i] = getBoardStatus(makeBoard(i));
             if (g_board_status[i] == 0)
-            {
                 for (int j = 0; j < 9; j++)
                     if ((i / g_factors[j]) % 3 == 0)
                         g_moves[i].push_back(j);
-            }
+            auto board = makeBoard(i);
+            g_hash[i] = (board[1][1] << 2) ^ ((board[0][0] ^ board[0][2] ^ board[2][0] ^ board[2][2]) << 1) ^ board[0][1] ^ board[1][0] ^ board[1][2] ^ board[2][1];
+            RotateClockWise90(board);
+            g_rotated_clockwise_90[i] = TBoardToInt(board);
+            board = makeBoard(i);
+            MirrorVertical(board);
+            g_mirrored_vertical[i] = TBoardToInt(board);
+        }
 
         for (int i = 0; i < 262144; i++)
         {
-            makeBoard4(board, i);
-            g_macro_board_status[i] = getMacroBoardStatus(board);
+            g_macro_board_status[i] = getMacroBoardStatus(makeBoard4(i));
+            auto board = makeBoard4(i);
+            g_hash4[i] = (board[1][1] << 2) ^ ((board[0][0] ^ board[0][2] ^ board[2][0] ^ board[2][2]) << 1) ^ board[0][1] ^ board[1][0] ^ board[1][2] ^ board[2][1];
+            RotateClockWise90(board);
+            g_macro_rotated_clockwise_90[i] = TBoardToInt4(board);
+            board = makeBoard4(i);
+            MirrorVertical(board);
+            g_macro_mirrored_vertical[i] = TBoardToInt4(board);
         }
     }
 };
 
 static UtttInit g_UtttInit;
 
+namespace uttt {
+
 IBoard::IBoard(): macro(0), micro({}), next(-1), player(1)
 {
 }
 
-IBoard::IBoard(int macro, const std::array<short, 9> &micro, char next, char player): macro(macro), micro(micro), next(next), player(player)
-{
-    this->player = player;
-}
-
-IBoard::IBoard(const IBoard &other): macro(other.macro), micro(other.micro), next(other.next), player(other.player)
+IBoard::IBoard(int macro, const std::array<short, 9> &micro, int8_t next, char player): macro(macro), micro(micro), next(next), player(player)
 {
 }
 
 bool
 IBoard::operator==(const IBoard &other) const
 {
-    return macro == other.macro && micro == other.micro && next == other.next && player == other.player;
+    if (macro == other.macro && micro == other.micro && next == other.next)
+        return true;
+    IBoard rotated(*this);
+    rotated.RotateClockWise90();
+    if (rotated.macro == other.macro && rotated.micro == other.micro && rotated.next == other.next)
+        return true;
+    rotated.RotateClockWise90();
+    if (rotated.macro == other.macro && rotated.micro == other.micro && rotated.next == other.next)
+        return true;
+    rotated.RotateClockWise90();
+    if (rotated.macro == other.macro && rotated.micro == other.micro && rotated.next == other.next)
+        return true;
+
+    IBoard vertical(*this);
+    vertical.MirrorVertical();
+    if (vertical.macro == other.macro && vertical.micro == other.micro && vertical.next == other.next)
+        return true;
+    vertical.RotateClockWise90();
+    if (vertical.macro == other.macro && vertical.micro == other.micro && vertical.next == other.next)
+        return true;
+    vertical.RotateClockWise90();
+    if (vertical.macro == other.macro && vertical.micro == other.micro && vertical.next == other.next)
+        return true;
+    vertical.RotateClockWise90();
+    if (vertical.macro == other.macro && vertical.micro == other.micro && vertical.next == other.next)
+        return true;
+    return false;
+}
+
+void
+IBoard::RotateClockWise90()
+{
+    macro = g_macro_rotated_clockwise_90[macro];
+    for (auto &m : micro)
+        m = g_rotated_clockwise_90[m];
+    micro = {micro[6], micro[3], micro[0], micro[7], micro[4], micro[1], micro[8], micro[5], micro[2]};
+    if (next != -1)
+        next = g_next_rotated_clockwise_90[next];
+}
+
+void
+IBoard::MirrorVertical()
+{
+    macro = g_macro_mirrored_vertical[macro];
+    for (auto &m : micro)
+        m = g_mirrored_vertical[m];
+    micro = {micro[2], micro[1], micro[0], micro[5], micro[4], micro[3], micro[8], micro[7], micro[6]};
+    if (next != -1)
+        next = g_next_mirrored_vertical[next];
 }
 
 std::size_t
 IBoard::Hash() const
 {
-    std::size_t result = macro;
-    for (auto mi : micro)
-        result = (result << 1) ^ mi;
-    result = (result << 1) ^ next;
-    return (result << 1) ^ player;
+    std::size_t result = g_hash4[macro];
+    result = (result << 1) ^ g_hash[micro[4]];
+    result = (result << 1) ^ g_hash[micro[0]] ^ g_hash[micro[2]] ^ g_hash[micro[6]] ^ g_hash[micro[8]];
+    result = (result << 1) ^ g_hash[micro[1]] ^ g_hash[micro[3]] ^ g_hash[micro[5]] ^ g_hash[micro[7]];
+    return result;
 }
 
 void
@@ -147,13 +230,11 @@ IBoard::Print() const
 {
     std::cout << "Player to move: " << static_cast<int>(player) << '\n';
     std::cout << static_cast<int>(next) << '\n';
-    int data1[3][3];
-    for (int i = 0; i < 9; i++)
-        data1[i / 3][i % 3] =  macro / g_factors4[i] % 4;
+    auto board = makeBoard4(macro);
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 3; j++)
-            std::cout << data1[i][j];
+            std::cout << board[i][j];
         std::cout << '\n';
     }
     int data[9][9];
@@ -169,12 +250,6 @@ IBoard::Print() const
     std::cout << "Status: " << static_cast<int>(GetStatus()) << "\n\n";
 }
 
-void
-IBoard::computeMacro()
-{
-    macro = g_board_status[micro[0]] * g_factors4[0] + g_board_status[micro[1]] * g_factors4[1] + g_board_status[micro[2]] * g_factors4[2] + g_board_status[micro[3]] * g_factors4[3] + g_board_status[micro[4]] * g_factors4[4] + g_board_status[micro[5]] * g_factors4[5] + g_board_status[micro[6]] * g_factors4[6] + g_board_status[micro[7]] * g_factors4[7] + g_board_status[micro[8]] * g_factors4[8];
-}
-
 std::vector<game::IMove>
 IBoard::GetPossibleMoves() const
 {
@@ -184,9 +259,8 @@ IBoard::GetPossibleMoves() const
             moves.emplace_back(next * 9 + m);
     else
         for (int i = 0; i < 9; i++)
-            if (g_board_status[micro[i]] == 0)
-                for (auto m : g_moves[micro[i]])
-                    moves.emplace_back(i * 9 + m);
+            for (auto m : g_moves[micro[i]])
+                moves.emplace_back(i * 9 + m);
     return moves;
 }
 
@@ -216,20 +290,6 @@ IBoard::ApplyMove(const game::IMove &move)
     else
         next = -1;
     player = 3 - player;
-}
-
-void
-IBoard::updateMicro(const std::array<char, 81> &other)
-{
-    micro[0] = other[0] * g_factors[0] + other[1] * g_factors[1] + other[2] * g_factors[2] + other[9] * g_factors[3] + other[10] * g_factors[4] + other[11] * g_factors[5] + other[18] * g_factors[6] + other[19] * g_factors[7] + other[20] * g_factors[8];
-    micro[1] = other[3] * g_factors[0] + other[4] * g_factors[1] + other[5] * g_factors[2] + other[12] * g_factors[3] + other[13] * g_factors[4] + other[14] * g_factors[5] + other[21] * g_factors[6] + other[22] * g_factors[7] + other[23] * g_factors[8];
-    micro[2] = other[6] * g_factors[0] + other[7] * g_factors[1] + other[8] * g_factors[2] + other[15] * g_factors[3] + other[16] * g_factors[4] + other[17] * g_factors[5] + other[24] * g_factors[6] + other[25] * g_factors[7] + other[26] * g_factors[8];
-    micro[3] = other[27] * g_factors[0] + other[28] * g_factors[1] + other[29] * g_factors[2] + other[36] * g_factors[3] + other[37] * g_factors[4] + other[38] * g_factors[5] + other[45] * g_factors[6] + other[46] * g_factors[7] + other[47] * g_factors[8];
-    micro[4] = other[30] * g_factors[0] + other[31] * g_factors[1] + other[32] * g_factors[2] + other[39] * g_factors[3] + other[40] * g_factors[4] + other[41] * g_factors[5] + other[48] * g_factors[6] + other[49] * g_factors[7] + other[50] * g_factors[8];
-    micro[5] = other[33] * g_factors[0] + other[34] * g_factors[1] + other[35] * g_factors[2] + other[42] * g_factors[3] + other[43] * g_factors[4] + other[44] * g_factors[5] + other[51] * g_factors[6] + other[52] * g_factors[7] + other[53] * g_factors[8];
-    micro[6] = other[54] * g_factors[0] + other[55] * g_factors[1] + other[56] * g_factors[2] + other[63] * g_factors[3] + other[64] * g_factors[4] + other[65] * g_factors[5] + other[72] * g_factors[6] + other[73] * g_factors[7] + other[74] * g_factors[8];
-    micro[7] = other[57] * g_factors[0] + other[58] * g_factors[1] + other[59] * g_factors[2] + other[66] * g_factors[3] + other[67] * g_factors[4] + other[68] * g_factors[5] + other[75] * g_factors[6] + other[76] * g_factors[7] + other[77] * g_factors[8];
-    micro[8] = other[60] * g_factors[0] + other[61] * g_factors[1] + other[62] * g_factors[2] + other[69] * g_factors[3] + other[70] * g_factors[4] + other[71] * g_factors[5] + other[78] * g_factors[6] + other[79] * g_factors[7] + other[80] * g_factors[8];
 }
 
 int

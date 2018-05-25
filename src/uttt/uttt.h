@@ -11,18 +11,17 @@ class IBoard
 {
     int macro;
     std::array<short, 9> micro;
-    char next;
+    int8_t next;
     game::IPlayer player;
 
-    void computeMacro();
-    void updateMicro(const std::array<char, 81> &other);
+    void RotateClockWise90();
+
+    void MirrorVertical();
 
 public:
     IBoard();
 
-    IBoard(int macro, const std::array<short, 9> &micro, char next, char player);
-
-    IBoard(const IBoard &other);
+    IBoard(int macro, const std::array<short, 9> &micro, int8_t next, char player);
 
     bool operator==(const IBoard &other) const;
 

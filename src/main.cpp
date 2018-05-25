@@ -31,7 +31,7 @@ int main()
         std::cout << "Iteration: " << iter << '\n';
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto results = MCTS_cache(uttt::IBoard(), 100000);
+        auto results = MCTS_cache(uttt::IBoard(), 10000);
         auto t2 = std::chrono::high_resolution_clock::now();
         long long total = 0;
         for (auto it : results)
@@ -56,8 +56,8 @@ int main()
     manager::Manager<uttt::IBoard> manager(game);
 
     std::vector<game::IBot<uttt::IBoard> *> bots;
-    bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_cache>(game, 10000));
-    bots.emplace_back(new uttt::UtttBot(10000));
+    bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_parallel>(game, 1000));
+    bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_cache>(game, 1000));
 
     std::vector<long long> bot_ids;
     for (auto bot : bots)
@@ -73,7 +73,7 @@ int main()
         std::cout << ' ' << manager.GetBotRating(id);
     std::cout << '\n';
 
-    int num_rounds = 100;
+    int num_rounds = 200;
     for (int i = 0; i < num_rounds; ++i)
     {
         std::cout << "Round " << i + 1 << " / " << num_rounds << '\n';
