@@ -4,6 +4,21 @@
 #include <mcts.h>
 
 template <typename IGame>
+int
+RandomPlayout<IGame>::operator()(const IGame &game) const
+{
+    auto ngame(game);
+    int status = ngame.GetStatus();
+    while (status == game::Undecided)
+    {
+        auto m = ngame.GetRandomMove();
+        ngame.ApplyMove(m);
+        status = ngame.GetStatus();
+    }
+    return status;
+}
+
+template <typename IGame>
 MCTSNode<IGame>::MCTSNode(const IGame &game): game(new IGame(game)), value(0.0), total(0)
 {
 }
@@ -23,7 +38,7 @@ MCTSNode<IGame>::~MCTSNode()
         delete it.second;
 }
 
-template <typename IGame>
+template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 void
 MCTS_(MCTSNode<IGame> *root)
 {
@@ -69,15 +84,7 @@ MCTS_(MCTSNode<IGame> *root)
         nodes.push_back(node);
     }
 
-    IGame *game = new IGame(*node->game);
-    int status = game->GetStatus();
-    while (status == game::Undecided)
-    {
-        auto m = game->GetRandomMove();
-        game->ApplyMove(m);
-        status = game->GetStatus();
-    }
-    delete game;
+    int status = RandomPlayout()(*node->game);
 
     ++nodes[0]->total;
     for (unsigned i = 1; i < nodes.size(); ++i)
@@ -92,7 +99,7 @@ MCTS_(MCTSNode<IGame> *root)
     }
 }
 
-template <typename IGame>
+template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 std::vector<std::pair<game::IMove, std::pair<double, long long>>>
 MCTS(const IGame &game, long long iterations)
 {
@@ -106,7 +113,7 @@ MCTS(const IGame &game, long long iterations)
     return results;
 }
 
-template <typename IGame>
+template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 void
 MCTS01_(MCTSNode<IGame> *root)
 {
@@ -152,15 +159,7 @@ MCTS01_(MCTSNode<IGame> *root)
         nodes.push_back(node);
     }
 
-    IGame *game = new IGame(*node->game);
-    int status = game->GetStatus();
-    while (status == game::Undecided)
-    {
-        auto m = game->GetRandomMove();
-        game->ApplyMove(m);
-        status = game->GetStatus();
-    }
-    delete game;
+    int status = RandomPlayout()(*node->game);
 
     ++nodes[0]->total;
     for (unsigned i = 1; i < nodes.size(); ++i)
@@ -173,7 +172,7 @@ MCTS01_(MCTSNode<IGame> *root)
     }
 }
 
-template <typename IGame>
+template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 std::vector<std::pair<game::IMove, std::pair<double, long long>>>
 MCTS01(const IGame &game, long long iterations)
 {

@@ -31,7 +31,7 @@ int main()
         std::cout << "Iteration: " << iter << '\n';
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto results = MCTS_cache(uttt::IBoard(), 10000);
+        auto results = MCTS_parallel(uttt::IBoard(), 10000);
         auto t2 = std::chrono::high_resolution_clock::now();
         long long total = 0;
         for (auto it : results)

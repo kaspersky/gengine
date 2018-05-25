@@ -4,7 +4,7 @@
 
 #include <mcts.h>
 
-template <typename IGame>
+template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 void
 MCTS_parallel_(MCTSNode<IGame> *root)
 {
@@ -54,14 +54,7 @@ MCTS_parallel_(MCTSNode<IGame> *root)
 
         nodes.push_back(new_node);
 
-        IGame game(*new_node->game);
-        int status = game.GetStatus();
-        while (status == game::Undecided)
-        {
-            auto m = game.GetRandomMove();
-            game.ApplyMove(m);
-            status = game.GetStatus();
-        }
+        int status = RandomPlayout()(*new_node->game);
 
         ++nodes[0]->total;
         for (unsigned i = 1; i < nodes.size(); ++i)
@@ -79,13 +72,13 @@ MCTS_parallel_(MCTSNode<IGame> *root)
     }
 }
 
-template <typename IGame>
+template <typename IGame, typename RandomPlayout>
 std::vector<std::pair<game::IMove, std::pair<double, long long>>>
 MCTS_parallel(const IGame &game, long long iterations)
 {
     MCTSNode<IGame> root(game);
     for (long long i = 0; i < iterations; ++i)
-        MCTS_parallel_(&root);
+        MCTS_parallel_<IGame, RandomPlayout>(&root);
 
     std::vector<std::pair<game::IMove, std::pair<double, long long>>> results;
     for (auto it : root.children)

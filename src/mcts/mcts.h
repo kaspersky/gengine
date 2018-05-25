@@ -21,18 +21,24 @@ struct MCTSNode
 };
 
 template <typename IGame>
+struct RandomPlayout
+{
+    int operator()(const IGame &game) const;
+};
+
+template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 std::vector<std::pair<game::IMove, std::pair<double, long long>>>
 MCTS(const IGame &game, long long iterations);
 
-template <typename IGame>
+template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 std::vector<std::pair<game::IMove, std::pair<double, long long>>>
 MCTS01(const IGame &game, long long iterations);
 
-template <typename IGame>
+template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 std::vector<std::pair<game::IMove, std::pair<double, long long>>>
 MCTS_parallel(const IGame &game, long long iterations);
 
-template <typename IGame>
+template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 std::vector<std::pair<game::IMove, std::pair<double, long long>>>
 MCTS_cache(const IGame &game, long long iterations);
 
