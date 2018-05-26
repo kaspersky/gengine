@@ -35,6 +35,9 @@ public:
 template <typename IGame>
 std::pair<long long, long long> Count(int depth);
 
+template <typename IGame>
+long long CountBFS(int depth);
+
 }
 
 #include <game.hpp>

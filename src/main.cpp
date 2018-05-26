@@ -23,7 +23,7 @@ int main()
     }
 #endif
 
-#if 1
+#if 0
     uttt::IBoard board;
     std::unordered_set<uttt::IBoard> set1, set2;
     set1.insert(board);
@@ -159,11 +159,26 @@ int main()
     for (int i = 0; i < 10; ++i)
     {
         std::cout << "Working on depth: " << i + 1 << '\n';
+
         auto t1 = std::chrono::high_resolution_clock::now();
         auto r = game::Count<uttt::IBoard>(i);
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "Count: " << r.first << " / " << r.second << '\n';
         long long millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+        std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds\n";
+    }
+#endif
+
+#if 1
+    for (int i = 0; i < 10; ++i)
+    {
+        std::cout << "Working on depth: " << i + 1 << '\n';
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        auto count = game::CountBFS<uttt::IBoard>(i);
+        auto t2 = std::chrono::high_resolution_clock::now();
+        std::cout << "DFS count: " << count << '\n';
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds\n";
     }
 #endif
