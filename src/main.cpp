@@ -169,7 +169,7 @@ int main()
     }
 #endif
 
-#if 1
+#if 0
     for (int i = 0; i < 10; ++i)
     {
         std::cout << "Working on depth: " << i + 1 << '\n';
@@ -179,6 +179,37 @@ int main()
         auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << "DFS count: " << count << '\n';
         auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+        std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds\n";
+    }
+#endif
+
+#if 1
+    int depth = 20;
+    long long total = 1;
+    std::unordered_set<uttt::IBoard> set, next_set;
+    set.insert(uttt::IBoard());
+    for (int i = 0; i < depth; ++i)
+    {
+        std::cout << "Working on depth: " << i + 1 << '\n';
+        auto t1 = std::chrono::high_resolution_clock::now();
+        next_set.clear();
+        for (auto g : set)
+        {
+            if (g.GetStatus() != game::Undecided)
+                continue;
+            auto moves = g.GetPossibleMoves();
+            for (auto m : moves)
+            {
+                auto ng = g;
+                ng.ApplyMove(m);
+                next_set.insert(ng);
+            }
+        }
+        total += next_set.size();
+        set = next_set;
+        auto t2 = std::chrono::high_resolution_clock::now();
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+        std::cout << "Total count: " << total << '\n';
         std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds\n";
     }
 #endif
