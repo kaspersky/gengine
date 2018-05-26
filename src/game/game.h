@@ -33,7 +33,10 @@ public:
 };
 
 template <typename IGame>
-std::pair<long long, long long> Count(int depth);
+std::pair<long long, long long> CountUnique(int depth);
+
+template <typename IGame>
+long long Count(int depth);
 
 template <typename IGame>
 long long CountBFS(int depth);
