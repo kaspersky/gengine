@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <chrono>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <ttt.h>
 #include <uttt.h>
@@ -23,6 +24,41 @@ int main()
 #endif
 
 #if 1
+    uttt::IBoard board;
+    std::unordered_set<uttt::IBoard> set1, set2;
+    set1.insert(board);
+    for (int i = 0; i < 2; ++i)
+    {
+
+        set2.clear();
+        for (auto b : set1)
+        {
+            auto moves = b.GetPossibleMoves();
+            for (auto m : moves)
+            {
+                auto b2 = b;
+                b2.ApplyMove(m);
+                set2.insert(b2);
+            }
+        }
+        set1 = set2;
+        std::unordered_map<std::size_t, std::vector<uttt::IBoard>> hashes;
+        for (auto b : set1)
+            hashes[b.Hash()].push_back(b);
+        std::cout << "After iteration " << i + 1 << " set size = " << set1.size() << '\n';
+        std::cout << "hashes size = " << hashes.size() << '\n';
+
+        for (auto it : hashes)
+        {
+            std::cout << "Hash family: " << it.first << '\n';
+            for (auto b : it.second)
+                b.Print();
+        }
+
+    }
+#endif
+
+#if 0
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
     int iter_num = 1;
@@ -31,7 +67,7 @@ int main()
         std::cout << "Iteration: " << iter << '\n';
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto results = MCTS_parallel(uttt::IBoard(), 10000);
+        auto results = MCTS_cache(uttt::IBoard(), 10000);
         auto t2 = std::chrono::high_resolution_clock::now();
         long long total = 0;
         for (auto it : results)
@@ -120,7 +156,7 @@ int main()
 #endif
 
 #if 0
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 10; ++i)
     {
         std::cout << "Working on depth: " << i + 1 << '\n';
         auto t1 = std::chrono::high_resolution_clock::now();

@@ -8,6 +8,7 @@ The IGame template represents a game state. It has to provide the following:
 // Copy constructor
 IGame(const IGame &other);
 
+bool operator==(const IGame &other) const;
 void ApplyMove(const IMove &move);
 std::vector<IMove> GetPossibleMoves() const;
 int GetMoveCount() const;
@@ -23,4 +24,3 @@ int GetStatus() const;
 
 IPlayer GetPlayerToMove() const;
 std::size_t Hash() const;
-bool Equal(const IGame *game) const;

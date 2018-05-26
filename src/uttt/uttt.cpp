@@ -21,7 +21,7 @@ static int g_rotated_clockwise_90[19683];
 static int g_mirrored_vertical[19683];
 static int g_macro_rotated_clockwise_90[262144];
 static int g_macro_mirrored_vertical[262144];
-static std::size_t g_hash[19683];
+static std::size_t g_hash[9][19683];
 static std::size_t g_hash4[262144];
 
 static TBoard
@@ -127,7 +127,15 @@ struct UtttInit
                     if ((i / g_factors[j]) % 3 == 0)
                         g_moves[i].push_back(j);
             auto board = makeBoard(i);
-            g_hash[i] = (board[1][1] << 2) ^ ((board[0][0] ^ board[0][2] ^ board[2][0] ^ board[2][2]) << 1) ^ board[0][1] ^ board[1][0] ^ board[1][2] ^ board[2][1];
+            g_hash[0][i] = board[0][0] ^ ((board[0][1] ^ board[1][0]) << 2) ^ ((board[0][2] ^ board[2][0]) << 4) ^ (board[1][1] << 6) ^ ((board[1][2] ^ board[2][1]) << 8) ^ (board[2][2] << 10);
+            g_hash[2][i] = board[0][2] ^ ((board[0][1] ^ board[1][2]) << 2) ^ ((board[0][0] ^ board[2][2]) << 4) ^ (board[1][1] << 6) ^ ((board[1][0] ^ board[2][1]) << 8) ^ (board[2][0] << 10);
+            g_hash[6][i] = board[2][0] ^ ((board[1][0] ^ board[2][1]) << 2) ^ ((board[0][0] ^ board[2][2]) << 4) ^ (board[1][1] << 6) ^ ((board[0][1] ^ board[1][2]) << 8) ^ (board[0][2] << 10);
+            g_hash[8][i] = board[2][2] ^ ((board[1][2] ^ board[2][1]) << 2) ^ ((board[0][2] ^ board[2][0]) << 4) ^ (board[1][1] << 6) ^ ((board[0][1] ^ board[1][0]) << 8) ^ (board[0][0] << 10);
+            g_hash[1][i] = (board[0][1] << 12) ^ (board[1][1] << 14) ^ (board[2][1] << 16) ^ ((board[0][0] ^ board[0][2]) << 18) ^ ((board[1][0] ^ board[1][2]) << 20) << ((board[2][0] ^ board[2][2]) << 22);
+            g_hash[3][i] = (board[1][0] << 12) ^ (board[1][1] << 14) ^ (board[1][2] << 16) ^ ((board[0][0] ^ board[2][0]) << 18) ^ ((board[0][1] ^ board[2][1]) << 20) << ((board[0][2] ^ board[2][2]) << 22);
+            g_hash[5][i] = (board[1][2] << 12) ^ (board[1][1] << 14) ^ (board[1][0] << 16) ^ ((board[0][2] ^ board[2][2]) << 18) ^ ((board[0][1] ^ board[2][1]) << 20) << ((board[0][0] ^ board[2][0]) << 22);
+            g_hash[7][i] = (board[2][1] << 12) ^ (board[1][1] << 14) ^ (board[0][1] << 16) ^ ((board[2][0] ^ board[2][2]) << 18) ^ ((board[1][0] ^ board[1][2]) << 20) << ((board[0][0] ^ board[0][2]) << 22);
+            g_hash[4][i] = (board[1][1] << 24) ^ ((board[0][0] ^ board[0][2] ^ board[2][0] ^ board[2][2]) << 26) ^ ((board[0][1] ^ board[1][0] ^ board[1][2] ^ board[2][1]) << 28);
             RotateClockWise90(board);
             g_rotated_clockwise_90[i] = TBoardToInt(board);
             board = makeBoard(i);
@@ -139,7 +147,7 @@ struct UtttInit
         {
             g_macro_board_status[i] = getMacroBoardStatus(makeBoard4(i));
             auto board = makeBoard4(i);
-            g_hash4[i] = (board[1][1] << 2) ^ ((board[0][0] ^ board[0][2] ^ board[2][0] ^ board[2][2]) << 1) ^ board[0][1] ^ board[1][0] ^ board[1][2] ^ board[2][1];
+            g_hash4[i] = (board[1][1] << 4) ^ ((board[0][0] ^ board[0][2] ^ board[2][0] ^ board[2][2]) << 2) ^ board[0][1] ^ board[1][0] ^ board[1][2] ^ board[2][1];
             RotateClockWise90(board);
             g_macro_rotated_clockwise_90[i] = TBoardToInt4(board);
             board = makeBoard4(i);
@@ -219,9 +227,10 @@ std::size_t
 IBoard::Hash() const
 {
     std::size_t result = g_hash4[macro];
-    result = (result << 1) ^ g_hash[micro[4]];
-    result = (result << 1) ^ g_hash[micro[0]] ^ g_hash[micro[2]] ^ g_hash[micro[6]] ^ g_hash[micro[8]];
-    result = (result << 1) ^ g_hash[micro[1]] ^ g_hash[micro[3]] ^ g_hash[micro[5]] ^ g_hash[micro[7]];
+    result <<= 6;
+    result ^= g_hash[4][micro[4]];
+    result ^= g_hash[0][micro[0]] ^ g_hash[2][micro[2]] ^ g_hash[6][micro[6]] ^ g_hash[8][micro[8]];
+    result ^= g_hash[1][micro[1]] ^ g_hash[3][micro[3]] ^ g_hash[5][micro[5]] ^ g_hash[7][micro[7]];
     return result;
 }
 
@@ -247,7 +256,8 @@ IBoard::Print() const
             std::cout << static_cast<int>(data[i][j]) << ' ';
         std::cout << '\n';
     }
-    std::cout << "Status: " << static_cast<int>(GetStatus()) << "\n\n";
+    std::cout << "Status: " << static_cast<int>(GetStatus()) << '\n';
+    std::cout << "Hash: " << Hash() << "\n\n";
 }
 
 std::vector<game::IMove>

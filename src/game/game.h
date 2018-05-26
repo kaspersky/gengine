@@ -14,32 +14,6 @@ enum
     Draw = 0,
 };
 
-#if 0
-class IGame
-{
-public:
-    virtual ~IGame();
-
-    virtual void ApplyMove(const IMove &move) = 0;
-
-    virtual std::vector<IMove> GetPossibleMoves() const = 0;
-
-    virtual int GetMoveCount() const;
-
-    virtual IMove GetRandomMove() const;
-
-    virtual int GetStatus() const = 0;
-
-    virtual IPlayer GetPlayerToMove() const = 0;
-
-    virtual std::size_t Hash() const = 0;
-
-    virtual bool Equal(const IGame *game) const = 0;
-
-    virtual void Print() const = 0;
-};
-#endif
-
 template <typename IGame>
 class IBot
 {
