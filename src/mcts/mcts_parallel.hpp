@@ -4,7 +4,7 @@
 
 #include <mcts.h>
 
-template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
+template <typename IGame, typename RandomPlayout>
 void
 MCTS_parallel_(MCTSNode<IGame> *root)
 {
@@ -72,7 +72,7 @@ MCTS_parallel_(MCTSNode<IGame> *root)
     }
 }
 
-template <typename IGame, typename RandomPlayout>
+template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 std::vector<std::pair<game::IMove, std::pair<double, long long>>>
 MCTS_parallel(const IGame &game, long long iterations)
 {

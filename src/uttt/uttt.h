@@ -7,8 +7,12 @@
 
 namespace uttt {
 
+struct RandomPlayout;
+
 class IBoard
 {
+    friend RandomPlayout;
+
     int macro;
     std::array<short, 9> micro;
     int8_t next;
@@ -68,6 +72,11 @@ struct Eval
 struct EvalMcts
 {
     double operator()(const IBoard *board) const;
+};
+
+struct RandomPlayout
+{
+    int operator()(const uttt::IBoard &game) const;
 };
 
 }

@@ -35,7 +35,7 @@ struct GameDataEqual
     }
 };
 
-template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
+template <typename IGame, typename RandomPlayout>
 void
 MCTS_cache_(std::unordered_set<GameData<IGame> *, GameDataHash<IGame>, GameDataEqual<IGame>> &cache, GameData<IGame> *root_game_data)
 {
@@ -137,7 +137,7 @@ MCTS_cache(const IGame &game, long long iterations)
     auto game_data = new GameData<IGame>(game);
     cache.insert(game_data);
     for (long long i = 0; i < iterations; ++i)
-        MCTS_cache_(cache, game_data);
+        MCTS_cache_<IGame, RandomPlayout>(cache, game_data);
     std::vector<std::pair<game::IMove, std::pair<double, long long>>> results;
     for (auto it : game_data->children)
         results.push_back({it.first, {it.second->value, it.second->total}});

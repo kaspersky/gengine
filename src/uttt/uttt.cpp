@@ -23,6 +23,7 @@ static int g_macro_rotated_clockwise_90[262144];
 static int g_macro_mirrored_vertical[262144];
 static std::size_t g_hash[9][19683];
 static std::size_t g_hash4[262144];
+static bool g_is_definitive_draw[262144];
 
 static TBoard
 makeBoard(short k)
@@ -146,13 +147,34 @@ struct UtttInit
         for (int i = 0; i < 262144; i++)
         {
             g_macro_board_status[i] = getMacroBoardStatus(makeBoard4(i));
+
             auto board = makeBoard4(i);
             g_hash4[i] = (board[1][1] << 4) ^ ((board[0][0] ^ board[0][2] ^ board[2][0] ^ board[2][2]) << 2) ^ board[0][1] ^ board[1][0] ^ board[1][2] ^ board[2][1];
             RotateClockWise90(board);
             g_macro_rotated_clockwise_90[i] = TBoardToInt4(board);
+
             board = makeBoard4(i);
             MirrorVertical(board);
             g_macro_mirrored_vertical[i] = TBoardToInt4(board);
+        }
+        for (int i = 0; i < 262144; ++i)
+        {
+            g_is_definitive_draw[i] = false;
+            auto board = makeBoard4(i);
+            for (int u = 0; u < 3; ++u)
+                for (int v = 0; v < 3; ++v)
+                    if (board[u][v] == 0)
+                        board[u][v] = 1;
+            if (g_macro_board_status[TBoardToInt4(board)] != 3)
+                continue;
+            board = makeBoard4(i);
+            for (int u = 0; u < 3; ++u)
+                for (int v = 0; v < 3; ++v)
+                    if (board[u][v] == 0)
+                        board[u][v] = 1;
+            if (g_macro_board_status[TBoardToInt4(board)] != 3)
+                continue;
+            g_is_definitive_draw[i] = true;
         }
     }
 };
@@ -391,6 +413,22 @@ EvalMcts::operator()(const IBoard *board) const
     for (auto it : results)
         max = std::max(max, it.second.first / it.second.second);
     return max;
+}
+
+int
+RandomPlayout::operator()(const uttt::IBoard &game) const
+{
+    auto ngame(game);
+    int status = ngame.GetStatus();
+    while (status == game::Undecided)
+    {
+        if (g_is_definitive_draw[ngame.macro])
+            return game::Draw;
+        auto m = ngame.GetRandomMove();
+        ngame.ApplyMove(m);
+        status = ngame.GetStatus();
+    }
+    return status;
 }
 
 }
