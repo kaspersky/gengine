@@ -2,7 +2,7 @@
 #include <unordered_set>
 #include <cmath>
 
-#include <mcts.h>
+#include "mcts.h"
 
 template <typename IGame>
 struct GameData

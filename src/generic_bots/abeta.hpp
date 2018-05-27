@@ -3,11 +3,11 @@
 namespace generic_bots {
 
 template <typename IGame, typename Eval=Eval<IGame>>
-class MinimaxBot: public game::IBot<IGame>
+class ABetaBot: public game::IBot<IGame>
 {
     int depth;
 
-    std::pair<double, game::IMove> Minimax(const IGame *game, int depth) const
+    std::pair<double, game::IMove> ABeta(const IGame *game, int depth, double alfa, double beta) const
     {
         Eval evaluator;
 
@@ -25,33 +25,37 @@ class MinimaxBot: public game::IBot<IGame>
         }
 
         std::pair<double, game::IMove> result = {0.0, -1};
+
         auto moves = game->GetPossibleMoves();
         for (auto m : moves)
         {
             auto new_game = new IGame(*game);
             new_game->ApplyMove(m);
-            auto r = Minimax(new_game, depth - 1);
+            auto r = ABeta(new_game, depth - 1, -beta, -alfa);
             delete new_game;
             if (result.second == -1 || -r.first > result.first)
                 result = {-r.first, m};
+            alfa = std::max(alfa, -r.first);
+            if (alfa >= beta)
+                break;
         }
 
         return result;
     }
 
 public:
-    MinimaxBot(const IGame *game, int depth): game::IBot<IGame>(game), depth(depth)
+    ABetaBot(const IGame *game, int depth): game::IBot<IGame>(game), depth(depth)
     {
     }
 
     game::IBot<IGame> *Clone() const
     {
-        return new MinimaxBot(this->game, depth);
+        return new ABetaBot(this->game, depth);
     }
 
     game::IMove MakeMove()
     {
-        auto r = Minimax(this->game, depth);
+        auto r = ABeta(this->game, depth, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
         this->game->ApplyMove(r.second);
         return r.second;
     }

@@ -1,7 +1,7 @@
 #include <cmath>
 #include <unordered_set>
 
-#include <mcts.h>
+#include "mcts.h"
 
 template <typename IGame>
 int

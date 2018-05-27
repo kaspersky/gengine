@@ -8,10 +8,12 @@
 namespace uttt {
 
 struct RandomPlayout;
+struct Eval1;
 
 class IBoard
 {
     friend RandomPlayout;
+    friend Eval1;
 
     int macro;
     std::array<short, 9> micro;
@@ -64,7 +66,7 @@ public:
     game::IBot<IBoard> *Clone() const;
 };
 
-struct Eval
+struct Eval1
 {
     double operator()(const IBoard *board) const;
 };

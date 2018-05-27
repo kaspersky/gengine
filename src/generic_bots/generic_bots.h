@@ -62,8 +62,16 @@ public:
     game::IMove MakeMove();
 };
 
+template <typename IGame>
+struct Eval
+{
+    double operator()(const IGame *game) const;
+};
+
 }
 
+#include "generic_bots.hpp"
 #include "mcts.hpp"
 #include "random.hpp"
 #include "minimax.hpp"
+#include "abeta.hpp"

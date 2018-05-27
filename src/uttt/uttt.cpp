@@ -24,6 +24,8 @@ static int g_macro_mirrored_vertical[262144];
 static std::size_t g_hash[9][19683];
 static std::size_t g_hash4[262144];
 static bool g_is_definitive_draw[262144];
+static double g_eval1[262144];
+static double g_eval1_matrix[3][3] = {{3.0, 1.0, 3.0}, {1.0, 5.0, 1.0}, {3.0, 1.0, 3.0}};
 
 static TBoard
 makeBoard(short k)
@@ -156,7 +158,18 @@ struct UtttInit
             board = makeBoard4(i);
             MirrorVertical(board);
             g_macro_mirrored_vertical[i] = TBoardToInt4(board);
+
+            double points = 0.0;
+            board = makeBoard4(i);
+            for (int u = 0; u < 3; ++u)
+                for (int v = 0; v < 3; ++v)
+                    if (board[u][v] == 1)
+                        points += g_eval1_matrix[u][v];
+                    else if (board[u][v] == 2)
+                        points -= g_eval1_matrix[u][v];
+            g_eval1[i] = points;
         }
+
         for (int i = 0; i < 262144; ++i)
         {
             g_is_definitive_draw[i] = false;
@@ -279,7 +292,9 @@ IBoard::Print() const
         std::cout << '\n';
     }
     std::cout << "Status: " << static_cast<int>(GetStatus()) << '\n';
-    std::cout << "Hash: " << Hash() << "\n\n";
+    std::cout << "Hash: " << Hash() << '\n';
+    std::cout << "Eval1: " << Eval1()(this) << '\n';
+    std::cout << '\n';
 }
 
 std::vector<game::IMove>
@@ -382,7 +397,7 @@ UtttBot::Clone() const
 }
 
 double
-Eval::operator()(const IBoard *board) const
+Eval1::operator()(const IBoard *board) const
 {
     int status = board->GetStatus();
     if (status == game::Draw)
@@ -391,9 +406,12 @@ Eval::operator()(const IBoard *board) const
     {
         if (board->GetPlayerToMove() == status)
             return std::numeric_limits<double>::max();
-        return std::numeric_limits<double>::min();
+        return -std::numeric_limits<double>::max();
     }
-    return 0.0;
+    auto r = g_eval1[board->macro];
+    if (board->player == 1)
+        return r;
+    return -r;
 }
 
 double
@@ -406,7 +424,7 @@ EvalMcts::operator()(const IBoard *board) const
     {
         if (board->GetPlayerToMove() == status)
             return std::numeric_limits<double>::max();
-        return std::numeric_limits<double>::min();
+        return -std::numeric_limits<double>::max();
     }
     auto results = MCTS<IBoard>(*board, 100);
     double max = -1.1;

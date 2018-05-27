@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <cmath>
 
-#include <mcts.h>
+#include "mcts.h"
 
 template <typename IGame, typename RandomPlayout>
 void

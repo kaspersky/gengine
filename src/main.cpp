@@ -12,7 +12,7 @@
 
 int main()
 {
-#if 0
+#if 1
     uttt::IBoard board;
     board.Print();
     std::vector<game::IMove> moves;
@@ -58,7 +58,7 @@ int main()
     }
 #endif
 
-#if 1
+#if 0
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
     int iter_num = 1;
@@ -93,7 +93,7 @@ int main()
 
     std::vector<game::IBot<uttt::IBoard> *> bots;
     bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_parallel>(game, 1000));
-    bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_cache>(game, 1000));
+    bots.emplace_back(new generic_bots::ABetaBot<uttt::IBoard>(game, 1000));
 
     std::vector<long long> bot_ids;
     for (auto bot : bots)
