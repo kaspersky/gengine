@@ -58,7 +58,7 @@ int main()
     }
 #endif
 
-#if 0
+#if 1
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
     int iter_num = 1;
@@ -67,7 +67,7 @@ int main()
         std::cout << "Iteration: " << iter << '\n';
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto results = MCTS_cache<uttt::IBoard>(uttt::IBoard(), 50000);
+        auto results = MCTS_parallel<uttt::IBoard>(uttt::IBoard(), 12500);
         auto t2 = std::chrono::high_resolution_clock::now();
         long long total = 0;
         for (auto it : results)
@@ -132,7 +132,7 @@ int main()
     }
 #endif
 
-#if 1
+#if 0
     uttt::IBoard game;
     for (int i = 1; i < 13; ++i)
     {

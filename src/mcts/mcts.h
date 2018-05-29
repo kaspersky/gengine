@@ -8,7 +8,7 @@
 template <typename IGame>
 struct MCTSNode
 {
-    IGame *game;
+    IGame game;
     double value;
     long long total;
     std::unordered_map<game::IMove, MCTSNode *> children;

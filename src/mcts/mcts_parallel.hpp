@@ -28,7 +28,7 @@ MCTS_parallel_(MCTSNode<IGame> *root)
         nodes.push_back(node);
     }
 
-    int status = node->game->GetStatus();
+    int status = node->game.GetStatus();
     if (status != game::Undecided)
     {
         ++nodes[0]->total;
@@ -37,7 +37,7 @@ MCTS_parallel_(MCTSNode<IGame> *root)
             ++nodes[i]->total;
             if (status == game::Draw)
                 continue;
-            if (nodes[i - 1]->game->GetPlayerToMove() == status)
+            if (nodes[i - 1]->game.GetPlayerToMove() == status)
                 nodes[i]->value += 1;
             else
                 nodes[i]->value -= 1;
@@ -45,16 +45,16 @@ MCTS_parallel_(MCTSNode<IGame> *root)
         return;
     }
 
-    auto moves = node->game->GetPossibleMoves();
+    auto moves = node->game.GetPossibleMoves();
     for (auto m : moves)
     {
-        auto new_node = new MCTSNode<IGame>(*node->game);
-        new_node->game->ApplyMove(m);
+        auto new_node = new MCTSNode<IGame>(node->game);
+        new_node->game.ApplyMove(m);
         node->children[m] = new_node;
 
         nodes.push_back(new_node);
 
-        int status = RandomPlayout()(*new_node->game);
+        int status = RandomPlayout()(new_node->game);
 
         ++nodes[0]->total;
         for (unsigned i = 1; i < nodes.size(); ++i)
@@ -62,7 +62,7 @@ MCTS_parallel_(MCTSNode<IGame> *root)
             ++nodes[i]->total;
             if (status == game::Draw)
                 continue;
-            if (nodes[i - 1]->game->GetPlayerToMove() == status)
+            if (nodes[i - 1]->game.GetPlayerToMove() == status)
                 nodes[i]->value += 1;
             else
                 nodes[i]->value -= 1;

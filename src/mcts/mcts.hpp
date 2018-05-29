@@ -19,12 +19,12 @@ RandomPlayout<IGame>::operator()(const IGame &game) const
 }
 
 template <typename IGame>
-MCTSNode<IGame>::MCTSNode(const IGame &game): game(new IGame(game)), value(0.0), total(0)
+MCTSNode<IGame>::MCTSNode(const IGame &game): game(game), value(0.0), total(0)
 {
 }
 
 template <typename IGame>
-MCTSNode<IGame>::MCTSNode(const MCTSNode &other): game(new IGame(other.game)), value(other.value), total(other.total)
+MCTSNode<IGame>::MCTSNode(const MCTSNode &other): game(other.game), value(other.value), total(other.total)
 {
     for (auto it : other.children)
         children[it.first] = new MCTSNode(*it.second);
@@ -33,7 +33,6 @@ MCTSNode<IGame>::MCTSNode(const MCTSNode &other): game(new IGame(other.game)), v
 template <typename IGame>
 MCTSNode<IGame>::~MCTSNode()
 {
-    delete game;
     for (auto it : children)
         delete it.second;
 }
@@ -46,9 +45,9 @@ MCTS_(MCTSNode<IGame> *root)
     std::vector<MCTSNode<IGame> *> nodes = {root};
     while (true)
     {
-        if (node->game->GetStatus() != game::Undecided)
+        if (node->game.GetStatus() != game::Undecided)
             break;
-        int s = node->game->GetMoveCount();
+        int s = node->game.GetMoveCount();
         if (static_cast<int>(node->children.size()) < s)
             break;
 
@@ -68,14 +67,14 @@ MCTS_(MCTSNode<IGame> *root)
         nodes.push_back(node);
     }
 
-    if (node->game->GetStatus() == game::Undecided)
+    if (node->game.GetStatus() == game::Undecided)
     {
-        auto m = node->game->GetRandomMove();
+        auto m = node->game.GetRandomMove();
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
-            MCTSNode<IGame> *new_node = new MCTSNode<IGame>(*node->game);
-            new_node->game->ApplyMove(m);
+            MCTSNode<IGame> *new_node = new MCTSNode<IGame>(node->game);
+            new_node->game.ApplyMove(m);
             node->children[m] = new_node;
             node = new_node;
         }
@@ -84,7 +83,7 @@ MCTS_(MCTSNode<IGame> *root)
         nodes.push_back(node);
     }
 
-    int status = RandomPlayout()(*node->game);
+    int status = RandomPlayout()(node->game);
 
     ++nodes[0]->total;
     for (unsigned i = 1; i < nodes.size(); ++i)
@@ -92,7 +91,7 @@ MCTS_(MCTSNode<IGame> *root)
         ++nodes[i]->total;
         if (status == game::Draw)
             continue;
-        if (nodes[i - 1]->game->GetPlayerToMove() == status)
+        if (nodes[i - 1]->game.GetPlayerToMove() == status)
             nodes[i]->value += 1;
         else
             nodes[i]->value -= 1;
@@ -121,9 +120,9 @@ MCTS01_(MCTSNode<IGame> *root)
     std::vector<MCTSNode<IGame> *> nodes = {root};
     while (true)
     {
-        if (node->game->GetStatus() != game::Undecided)
+        if (node->game.GetStatus() != game::Undecided)
             break;
-        int s = node->game->GetMoveCount();
+        int s = node->game.GetMoveCount();
         if (static_cast<int>(node->children.size()) < s)
             break;
 
@@ -143,14 +142,14 @@ MCTS01_(MCTSNode<IGame> *root)
         nodes.push_back(node);
     }
 
-    if (node->game->GetStatus() == game::Undecided)
+    if (node->game.GetStatus() == game::Undecided)
     {
-        auto m = node->game->GetRandomMove();
+        auto m = node->game.GetRandomMove();
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
-            MCTSNode<IGame> *new_node = new MCTSNode<IGame>(*node->game);
-            new_node->game->ApplyMove(m);
+            MCTSNode<IGame> *new_node = new MCTSNode<IGame>(node->game);
+            new_node->game.ApplyMove(m);
             node->children[m] = new_node;
             node = new_node;
         }
@@ -159,7 +158,7 @@ MCTS01_(MCTSNode<IGame> *root)
         nodes.push_back(node);
     }
 
-    int status = RandomPlayout()(*node->game);
+    int status = RandomPlayout()(node->game);
 
     ++nodes[0]->total;
     for (unsigned i = 1; i < nodes.size(); ++i)
@@ -167,7 +166,7 @@ MCTS01_(MCTSNode<IGame> *root)
         ++nodes[i]->total;
         if (status == game::Draw)
             nodes[i]->value += 0.5;
-        else if (nodes[i - 1]->game->GetPlayerToMove() == status)
+        else if (nodes[i - 1]->game.GetPlayerToMove() == status)
             nodes[i]->value += 1.0;
     }
 }
