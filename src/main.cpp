@@ -10,9 +10,9 @@
 #include <manager.h>
 #include <generic_bots.h>
 
-int main()
+void
+UtttBoardTest()
 {
-#if 0
     uttt::IBoard board;
     board.Print();
     std::vector<game::IMove> moves;
@@ -21,44 +21,12 @@ int main()
         board.ApplyMove(board.GetRandomMove());
         board.Print();
     }
-#endif
+}
 
-#if 0
-    uttt::IBoard board;
-    std::unordered_set<uttt::IBoard> set1, set2;
-    set1.insert(board);
-    for (int i = 0; i < 2; ++i)
-    {
-
-        set2.clear();
-        for (auto b : set1)
-        {
-            auto moves = b.GetPossibleMoves();
-            for (auto m : moves)
-            {
-                auto b2 = b;
-                b2.ApplyMove(m);
-                set2.insert(b2);
-            }
-        }
-        set1 = set2;
-        std::unordered_map<std::size_t, std::vector<uttt::IBoard>> hashes;
-        for (auto b : set1)
-            hashes[b.Hash()].push_back(b);
-        std::cout << "After iteration " << i + 1 << " set size = " << set1.size() << '\n';
-        std::cout << "hashes size = " << hashes.size() << '\n';
-
-        for (auto it : hashes)
-        {
-            std::cout << "Hash family: " << it.first << '\n';
-            for (auto b : it.second)
-                b.Print();
-        }
-
-    }
-#endif
-
-#if 1
+template <typename IGame>
+void
+MCTSTest()
+{
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
     int iter_num = 1;
@@ -67,7 +35,7 @@ int main()
         std::cout << "Iteration: " << iter << '\n';
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto results = MCTS_parallel<uttt::IBoard>(uttt::IBoard(), 12500);
+        auto results = MCTS_parallel<IGame>({}, 1000000);
         auto t2 = std::chrono::high_resolution_clock::now();
         long long total = 0;
         for (auto it : results)
@@ -85,9 +53,11 @@ int main()
     std::sort(best.begin(), best.end());
     for (unsigned i = 0; i < best.size(); ++i)
         std::cout << best[i].first << ": " << best[i].second.first / iter_num << ' ' << static_cast<double>(best[i].second.second) / iter_num << '\n';
-#endif
+}
 
-#if 0
+void
+ManagerTest()
+{
     auto game = new uttt::IBoard;
     manager::Manager<uttt::IBoard> manager(game);
 
@@ -119,34 +89,11 @@ int main()
             std::cout << ' ' << manager.GetBotRating(id);
         std::cout << '\n';
     }
-#endif
+}
 
-#if 0
-    uttt::IBoard game;
-    auto moves = game.GetPossibleMoves();
-    for (auto m : moves)
-    {
-        auto g2 = game;
-        g2.ApplyMove(m);
-        std::cout << m << ": " << uttt::Eval1()(&g2) << '\n';
-    }
-#endif
-
-#if 0
-    uttt::IBoard game;
-    for (int i = 1; i < 13; ++i)
-    {
-        generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1> abeta(&game, i);
-        auto t1 = std::chrono::high_resolution_clock::now();
-        auto m = abeta.MakeMove();
-        auto t2 = std::chrono::high_resolution_clock::now();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-        std::cout << "Depth: " << i << " in " << millis << " milliseconds\n";
-        std::cout << "Move: " << m << '\n';
-    }
-#endif
-
-#if 0
+void
+CountTest()
+{
     for (int i = 0; i < 10; ++i)
     {
         std::cout << "Working on depth: " << i + 1 << '\n';
@@ -157,24 +104,19 @@ int main()
         long long millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         std::cout << "Count: " << r << '\n';
         std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds\n";
-    }
-#endif
 
-#if 0
-    for (int i = 0; i < 10; ++i)
-    {
-        std::cout << "Working on depth: " << i + 1 << '\n';
-
-        auto t1 = std::chrono::high_resolution_clock::now();
+        t1 = std::chrono::high_resolution_clock::now();
         auto count = game::CountBFS<uttt::IBoard>(i);
-        auto t2 = std::chrono::high_resolution_clock::now();
+        t2 = std::chrono::high_resolution_clock::now();
         std::cout << "DFS count: " << count << '\n';
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+        millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds\n";
     }
-#endif
+}
 
-#if 0
+void
+CountUniqueUtttBoardPositions()
+{
     int depth = 20;
     long long total = 1;
     std::unordered_set<uttt::IBoard> set, next_set;
@@ -203,5 +145,67 @@ int main()
         std::cout << "Total count: " << total << '\n';
         std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds\n";
     }
-#endif
+}
+
+template <typename IGame, typename Eval>
+void
+ABetaBotTest()
+{
+    IGame game;
+    for (int i = 1; i < 13; ++i)
+    {
+        generic_bots::ABetaBot<IGame, Eval> abeta(&game, i);
+        auto t1 = std::chrono::high_resolution_clock::now();
+        auto m = abeta.MakeMove();
+        auto t2 = std::chrono::high_resolution_clock::now();
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+        std::cout << "Depth: " << i << " in " << millis << " milliseconds\n";
+        std::cout << "Move: " << m << '\n';
+    }
+}
+
+void
+UtttHashTest()
+{
+    uttt::IBoard board;
+    std::unordered_set<uttt::IBoard> set1, set2;
+    set1.insert(board);
+    for (int i = 0; i < 2; ++i)
+    {
+        set2.clear();
+        for (auto b : set1)
+        {
+            auto moves = b.GetPossibleMoves();
+            for (auto m : moves)
+            {
+                auto b2 = b;
+                b2.ApplyMove(m);
+                set2.insert(b2);
+            }
+        }
+        set1 = set2;
+        std::unordered_map<std::size_t, std::vector<uttt::IBoard>> hashes;
+        for (auto b : set1)
+            hashes[b.Hash()].push_back(b);
+        std::cout << "After iteration " << i + 1 << " set size = " << set1.size() << '\n';
+        std::cout << "hashes size = " << hashes.size() << '\n';
+
+        for (auto it : hashes)
+        {
+            std::cout << "Hash family: " << it.first << '\n';
+            for (auto b : it.second)
+                b.Print();
+        }
+    }
+}
+
+int main()
+{
+    //UtttBoardTest();
+    //UtttHashTest();
+    //MCTSTest<ttt::Board>();
+    //ManagerTest();
+    //CountTest();
+    ABetaBotTest<ttt::Board, generic_bots::Eval<ttt::Board>>();
+    //CountUniqueUtttBoardPositions
 }

@@ -65,7 +65,7 @@ public:
 template <typename IGame>
 struct Eval
 {
-    double operator()(const IGame *game) const;
+    double operator()(const IGame &game) const;
 };
 
 }
