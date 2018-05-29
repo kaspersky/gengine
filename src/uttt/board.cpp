@@ -5,17 +5,16 @@
 #include <limits>
 #include <random>
 
-#include <uttt.h>
+#include "uttt.h"
+#include "utttp.h"
 #include <mcts.h>
-
-typedef std::array<std::array<int, 3>, 3> TBoard;
 
 static short g_factors[9] = {1, 3, 9, 27, 81, 243, 729, 2187, 6561};
 static int g_factors4[9] = {1, 4, 16, 64, 256, 1024, 4096, 16384, 65536};
 static int8_t g_next_rotated_clockwise_90[9] = {2, 5, 8, 1, 4, 7, 0, 3, 6};
 static int8_t g_next_mirrored_vertical[9] = {2, 1, 0, 5, 4, 3, 8, 7, 6};
-static char g_board_status[19683];
-static char g_macro_board_status[262144];
+char g_board_status[19683];
+char g_macro_board_status[262144];
 static std::vector<char> g_moves[19683];
 static int g_rotated_clockwise_90[19683];
 static int g_mirrored_vertical[19683];
@@ -23,16 +22,8 @@ static int g_macro_rotated_clockwise_90[262144];
 static int g_macro_mirrored_vertical[262144];
 static std::size_t g_hash[9][19683];
 static std::size_t g_hash4[262144];
-static bool g_is_definitive_draw[262144];
-static double g_eval_micro1[19683];
-static double g_eval_macro1[262144];
-static double g_micro_double_bonus1 = 2.0;
-static double g_macro_double_bonus1 = 15.0;
-static double g_eval_micro_matrix1[3][3] = {{3.0, 1.0, 3.0}, {1.0, 4.0, 1.0}, {3.0, 1.0, 3.0}};
-static double g_eval_macro_matrix1[3][3] = {{20.0, 10.0, 20.0}, {10.0, 30.0, 10.0}, {20.0, 10.0, 20.0}};
-static double g_eval_micro_relative[9] = {2.0, 1.0, 2.0, 1.0, 3.0, 1.0, 2.0, 1.0, 2.0};
 
-static TBoard
+TBoard
 makeBoard(short k)
 {
     return {k / g_factors[0] % 3, k / g_factors[1] % 3, k / g_factors[2] % 3,
@@ -40,7 +31,7 @@ makeBoard(short k)
             k / g_factors[6] % 3, k / g_factors[7] % 3, k / g_factors[8] % 3};
 }
 
-static TBoard
+TBoard
 makeBoard4(int k)
 {
     return {k / g_factors4[0] % 4, k / g_factors4[1] % 4, k / g_factors4[2] % 4,
@@ -56,7 +47,7 @@ TBoardToInt(const TBoard &board)
            board[2][0] * g_factors[6] + board[2][1] * g_factors[7] + board[2][2] * g_factors[8];
 }
 
-static int
+int
 TBoardToInt4(const TBoard &board)
 {
     return board[0][0] * g_factors4[0] + board[0][1] * g_factors4[1] + board[0][2] * g_factors4[2] +
@@ -149,32 +140,6 @@ struct UtttInit
             board = makeBoard(i);
             MirrorVertical(board);
             g_mirrored_vertical[i] = TBoardToInt(board);
-
-            double points = 0.0;
-            board = makeBoard(i);
-            if (g_board_status[i] == 0)
-            {
-                for (int u = 0; u < 3; ++u)
-                    for (int v = 0; v < 3; ++v)
-                        if (board[u][v] != 0)
-                            points += (-2 * board[u][v] + 3) * g_eval_micro_matrix1[u][v];
-                for (int u = 0; u < 3; ++u)
-                    for (int v = 0; v < 2; ++v)
-                    {
-                        if (board[u][v] == board[u][v + 1] && board[u][v] != 0)
-                            points += (-2 * board[u][v] + 3) * g_micro_double_bonus1;
-                        if (board[v][u] == board[v + 1][u] && board[v][u] != 0)
-                            points += (-2 * board[v][u] + 3) * g_micro_double_bonus1;
-                    }
-                if (board[1][1] != 0)
-                {
-                    if (board[1][1] == board[0][0] || board[1][1] == board[2][2])
-                        points += (-2 * board[1][1] + 3) * g_micro_double_bonus1;
-                    if (board[1][1] == board[2][0] || board[1][1] == board[0][2])
-                        points += (-2 * board[1][1] + 3) * g_micro_double_bonus1;
-                }
-            }
-            g_eval_micro1[i] = points;
         }
 
         for (int i = 0; i < 262144; i++)
@@ -189,50 +154,10 @@ struct UtttInit
             board = makeBoard4(i);
             MirrorVertical(board);
             g_macro_mirrored_vertical[i] = TBoardToInt4(board);
-
-            double points = 0.0;
-            board = makeBoard4(i);
-            for (int u = 0; u < 3; ++u)
-                for (int v = 0; v < 3; ++v)
-                    if (board[u][v] == 1 || board[u][v] == 2)
-                        points += (-2 * board[u][v] + 3) * g_eval_macro_matrix1[u][v];
-            for (int u = 0; u < 3; ++u)
-                for (int v = 0; v < 2; ++v)
-                {
-                    if (board[u][v] == board[u][v + 1] && board[u][v] != 0)
-                        points += (-2 * board[u][v] + 3) * g_macro_double_bonus1;
-                    if (board[v][u] == board[v + 1][u] && board[v][u] != 0)
-                        points += (-2 * board[v][u] + 3) * g_macro_double_bonus1;
-                }
-            if (board[1][1] == 1 || board[1][1] == 2)
-            {
-                if (board[1][1] == board[0][0] || board[1][1] == board[2][2])
-                    points += (-2 * board[1][1] + 3) * g_macro_double_bonus1;
-                if (board[1][1] == board[2][0] || board[1][1] == board[0][2])
-                    points += (-2 * board[1][1] + 3) * g_macro_double_bonus1;
-            }
-            g_eval_macro1[i] = points;
         }
 
-        for (int i = 0; i < 262144; ++i)
-        {
-            g_is_definitive_draw[i] = false;
-            auto board = makeBoard4(i);
-            for (int u = 0; u < 3; ++u)
-                for (int v = 0; v < 3; ++v)
-                    if (board[u][v] == 0)
-                        board[u][v] = 1;
-            if (g_macro_board_status[TBoardToInt4(board)] != 3)
-                continue;
-            board = makeBoard4(i);
-            for (int u = 0; u < 3; ++u)
-                for (int v = 0; v < 3; ++v)
-                    if (board[u][v] == 0)
-                        board[u][v] = 1;
-            if (g_macro_board_status[TBoardToInt4(board)] != 3)
-                continue;
-            g_is_definitive_draw[i] = true;
-        }
+        InitBot();
+        InitEval1();
     }
 };
 
@@ -398,100 +323,6 @@ game::IPlayer
 IBoard::GetPlayerToMove() const
 {
     return player;
-}
-
-UtttBot::UtttBot(long long mcts_iterations): game::IBot<IBoard>(nullptr), mcts_iterations(mcts_iterations)
-{
-}
-
-UtttBot::UtttBot(const IBoard &board, long long mcts_iterations): game::IBot<IBoard>(nullptr), board(board), mcts_iterations(mcts_iterations)
-{
-}
-
-UtttBot::UtttBot(const UtttBot &other): game::IBot<IBoard>(other), board(other.board), mcts_iterations(other.mcts_iterations)
-{
-}
-
-game::IMove
-UtttBot::MakeMove()
-{
-    auto results = MCTS(board, mcts_iterations);
-    double max = -1.1;
-    game::IMove move = -1;
-    for (auto it : results)
-    {
-        auto v = it.second.first / it.second.second;
-        if (v > max)
-            max = v, move = it.first;
-    }
-    board.ApplyMove(move);
-    return move;
-}
-
-void
-UtttBot::SendMove(const game::IMove &move)
-{
-    board.ApplyMove(move);
-}
-
-game::IBot<IBoard> *
-UtttBot::Clone() const
-{
-    return new UtttBot(*this);
-}
-
-double
-Eval1::operator()(const IBoard *board) const
-{
-    int status = board->GetStatus();
-    if (status == game::Draw)
-        return 0.0;
-    if (status != game::Undecided)
-    {
-        if (board->GetPlayerToMove() == status)
-            return std::numeric_limits<double>::max();
-        return -std::numeric_limits<double>::max();
-    }
-    double points = 0.0;
-    for (int i = 0; i < 9; ++i)
-        points += g_eval_micro1[board->micro[i]] * g_eval_micro_relative[i];
-    points += g_eval_macro1[board->macro];
-    return (-2 * board->player + 3) * points;
-}
-
-double
-EvalMcts::operator()(const IBoard *board) const
-{
-    int status = board->GetStatus();
-    if (status == game::Draw)
-        return 0.0;
-    if (status != game::Undecided)
-    {
-        if (board->GetPlayerToMove() == status)
-            return std::numeric_limits<double>::max();
-        return -std::numeric_limits<double>::max();
-    }
-    auto results = MCTS<IBoard>(*board, 100);
-    double max = -1.1;
-    for (auto it : results)
-        max = std::max(max, it.second.first / it.second.second);
-    return max;
-}
-
-int
-RandomPlayout::operator()(const uttt::IBoard &game) const
-{
-    auto ngame(game);
-    int status = ngame.GetStatus();
-    while (status == game::Undecided)
-    {
-        if (g_is_definitive_draw[ngame.macro])
-            return game::Draw;
-        auto m = ngame.GetRandomMove();
-        ngame.ApplyMove(m);
-        status = ngame.GetStatus();
-    }
-    return status;
 }
 
 }
