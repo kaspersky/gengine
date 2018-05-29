@@ -5,16 +5,16 @@
 #include <limits>
 #include <random>
 
+#include <mcts.h>
 #include "uttt.h"
 #include "utttp.h"
-#include <mcts.h>
 
+char g_board_status[19683];
+char g_macro_board_status[262144];
 static short g_factors[9] = {1, 3, 9, 27, 81, 243, 729, 2187, 6561};
 static int g_factors4[9] = {1, 4, 16, 64, 256, 1024, 4096, 16384, 65536};
 static int8_t g_next_rotated_clockwise_90[9] = {2, 5, 8, 1, 4, 7, 0, 3, 6};
 static int8_t g_next_mirrored_vertical[9] = {2, 1, 0, 5, 4, 3, 8, 7, 6};
-char g_board_status[19683];
-char g_macro_board_status[262144];
 static std::vector<char> g_moves[19683];
 static int g_rotated_clockwise_90[19683];
 static int g_mirrored_vertical[19683];

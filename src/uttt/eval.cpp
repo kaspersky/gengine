@@ -1,8 +1,5 @@
 #include <algorithm>
-#include <vector>
-#include <array>
 #include <limits>
-#include <random>
 
 #include <mcts.h>
 #include "uttt.h"
