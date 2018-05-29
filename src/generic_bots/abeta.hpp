@@ -29,10 +29,9 @@ class ABetaBot: public game::IBot<IGame>
         auto moves = game->GetPossibleMoves();
         for (auto m : moves)
         {
-            auto new_game = new IGame(*game);
-            new_game->ApplyMove(m);
-            auto r = ABeta(new_game, depth - 1, -beta, -alfa);
-            delete new_game;
+            IGame new_game(*game);
+            new_game.ApplyMove(m);
+            auto r = ABeta(&new_game, depth - 1, -beta, -alfa);
             if (result.second == -1 || -r.first > result.first)
                 result = {-r.first, m};
             alfa = std::max(alfa, -r.first);

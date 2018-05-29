@@ -12,7 +12,7 @@
 
 int main()
 {
-#if 1
+#if 0
     uttt::IBoard board;
     board.Print();
     std::vector<game::IMove> moves;
@@ -93,7 +93,7 @@ int main()
 
     std::vector<game::IBot<uttt::IBoard> *> bots;
     bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_parallel>(game, 1000));
-    bots.emplace_back(new generic_bots::ABetaBot<uttt::IBoard>(game, 1000));
+    bots.emplace_back(new generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1>(game, 9));
 
     std::vector<long long> bot_ids;
     for (auto bot : bots)
@@ -122,36 +122,27 @@ int main()
 #endif
 
 #if 0
-    auto game = new ttt::Board;
-    manager::Manager<ttt::Board> manager(game);
-
-    std::vector<game::IBot<ttt::Board> *> bots;
-    bots.emplace_back(new generic_bots::RandomBot<ttt::Board>(game));
-    bots.emplace_back(new generic_bots::FixedMctsBot<ttt::Board>(game, 1000));
-
-    std::vector<long long> bot_ids;
-    for (auto bot : bots)
+    uttt::IBoard game;
+    auto moves = game.GetPossibleMoves();
+    for (auto m : moves)
     {
-        bot_ids.emplace_back(manager.AddBot(bot));
-        delete bot;
+        auto g2 = game;
+        g2.ApplyMove(m);
+        std::cout << m << ": " << uttt::Eval1()(&g2) << '\n';
     }
+#endif
 
-    delete game;
-
-    std::cout << "Initial ratings:";
-    for (long long id : bot_ids)
-        std::cout << ' ' << manager.GetBotRating(id);
-    std::cout << '\n';
-
-    int num_rounds = 10;
-    for (int i = 0; i < num_rounds; ++i)
+#if 1
+    uttt::IBoard game;
+    for (int i = 1; i < 13; ++i)
     {
-        std::cout << "Round " << i + 1 << " / " << num_rounds << '\n';
-        manager.RoundRobin();
-        std::cout << "New ratings:";
-        for (long long id : bot_ids)
-            std::cout << ' ' << manager.GetBotRating(id);
-        std::cout << '\n';
+        generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1> abeta(&game, i);
+        auto t1 = std::chrono::high_resolution_clock::now();
+        auto m = abeta.MakeMove();
+        auto t2 = std::chrono::high_resolution_clock::now();
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+        std::cout << "Depth: " << i << " in " << millis << " milliseconds\n";
+        std::cout << "Move: " << m << '\n';
     }
 #endif
 
