@@ -75,37 +75,37 @@ InitEval1()
 namespace uttt {
 
 double
-Eval1::operator()(const IBoard *board) const
+Eval1::operator()(const IBoard &board) const
 {
-    int status = board->GetStatus();
+    int status = board.GetStatus();
     if (status == game::Draw)
         return 0.0;
     if (status != game::Undecided)
     {
-        if (board->GetPlayerToMove() == status)
+        if (board.GetPlayerToMove() == status)
             return std::numeric_limits<double>::max();
         return -std::numeric_limits<double>::max();
     }
     double points = 0.0;
     for (int i = 0; i < 9; ++i)
-        points += g_eval_micro1[board->micro[i]] * g_eval_micro_relative[i];
-    points += g_eval_macro1[board->macro];
-    return (-2 * board->player + 3) * points;
+        points += g_eval_micro1[board.micro[i]] * g_eval_micro_relative[i];
+    points += g_eval_macro1[board.macro];
+    return (-2 * board.player + 3) * points;
 }
 
 double
-EvalMcts::operator()(const IBoard *board) const
+EvalMcts::operator()(const IBoard &board) const
 {
-    int status = board->GetStatus();
+    int status = board.GetStatus();
     if (status == game::Draw)
         return 0.0;
     if (status != game::Undecided)
     {
-        if (board->GetPlayerToMove() == status)
+        if (board.GetPlayerToMove() == status)
             return std::numeric_limits<double>::max();
         return -std::numeric_limits<double>::max();
     }
-    auto results = MCTS<IBoard>(*board, 100);
+    auto results = MCTS<IBoard>(board, 100);
     double max = -1.1;
     for (auto it : results)
         max = std::max(max, it.second.first / it.second.second);

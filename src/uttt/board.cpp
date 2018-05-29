@@ -262,7 +262,7 @@ IBoard::Print() const
     }
     std::cout << "Status: " << static_cast<int>(GetStatus()) << '\n';
     std::cout << "Hash: " << Hash() << '\n';
-    std::cout << "Eval1: " << Eval1()(this) << '\n';
+    std::cout << "Eval1: " << Eval1()(*this) << '\n';
     std::cout << '\n';
 }
 

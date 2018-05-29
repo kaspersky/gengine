@@ -68,12 +68,12 @@ public:
 
 struct Eval1
 {
-    double operator()(const IBoard *board) const;
+    double operator()(const IBoard &board) const;
 };
 
 struct EvalMcts
 {
-    double operator()(const IBoard *board) const;
+    double operator()(const IBoard &board) const;
 };
 
 struct RandomPlayout
