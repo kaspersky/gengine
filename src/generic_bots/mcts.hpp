@@ -5,19 +5,19 @@
 
 namespace generic_bots {
 
-template <typename IGame, std::vector<std::pair<game::IMove, std::pair<double, long long>>>(*MCTS)(const IGame &, long long)>
+template <typename IGame, std::vector<MCTSResults>(*MCTS)(const IGame &, long long)>
 FixedMctsBot<IGame, MCTS>::FixedMctsBot(const IGame *game, long long num_iterations): game::IBot<IGame>(game), num_iterations(num_iterations)
 {
 }
 
-template <typename IGame, std::vector<std::pair<game::IMove, std::pair<double, long long>>>(*MCTS)(const IGame &, long long)>
+template <typename IGame, std::vector<MCTSResults>(*MCTS)(const IGame &, long long)>
 game::IBot<IGame> *
 FixedMctsBot<IGame, MCTS>::Clone() const
 {
     return new FixedMctsBot(this->game, num_iterations);
 }
 
-template <typename IGame, std::vector<std::pair<game::IMove, std::pair<double, long long>>>(*MCTS)(const IGame &, long long)>
+template <typename IGame, std::vector<MCTSResults>(*MCTS)(const IGame &, long long)>
 game::IMove
 FixedMctsBot<IGame, MCTS>::MakeMove()
 {
@@ -25,45 +25,11 @@ FixedMctsBot<IGame, MCTS>::MakeMove()
 
     double max = -1.1;
     game::IMove move = -1;
-    for (auto it : results)
+    for (const auto &result : results)
     {
-        auto v = it.second.first / it.second.second;
+        auto v = result.value / result.total;
         if (v > max)
-            max = v, move = it.first;
-    }
-
-    this->game->ApplyMove(move);
-
-    return move;
-}
-
-template <typename IGame>
-FixedMcts01Bot<IGame>::FixedMcts01Bot(const IGame *game, long long num_iterations): game::IBot<IGame>(game), num_iterations(num_iterations)
-{
-}
-
-template <typename IGame>
-game::IBot<IGame> *
-FixedMcts01Bot<IGame>::Clone() const
-{
-    return new FixedMcts01Bot(this->game, num_iterations);
-}
-
-template <typename IGame>
-game::IMove
-FixedMcts01Bot<IGame>::MakeMove()
-{
-    MCTSNode<IGame> node(this->game);
-    for (int i = 0; i < num_iterations; ++i)
-        MCTS01(&node);
-
-    double max = -1.1;
-    game::IMove move = -1;
-    for (auto it : node.children)
-    {
-        auto v = it.second->value / it.second->total;
-        if (v > max)
-            max = v, move = it.first;
+            max = v, move = result.move;
     }
 
     this->game->ApplyMove(move);

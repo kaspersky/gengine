@@ -5,6 +5,21 @@
 
 #include <game.h>
 
+struct MCTSResults
+{
+    game::IMove move;
+    double value;
+    long long total;
+
+    MCTSResults(game::IMove move, double value, long long total): move(move), value(value), total(total)
+    {
+    }
+
+    MCTSResults(MCTSResults &&other): move(other.move), value(other.value), total(other.total)
+    {
+    }
+};
+
 template <typename IGame>
 struct MCTSNode
 {
@@ -27,19 +42,19 @@ struct RandomPlayout
 };
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+std::vector<MCTSResults>
 MCTS(const IGame &game, long long iterations);
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+std::vector<MCTSResults>
 MCTS01(const IGame &game, long long iterations);
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+std::vector<MCTSResults>
 MCTS_parallel(const IGame &game, long long iterations);
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+std::vector<MCTSResults>
 MCTS_cache(const IGame &game, long long iterations);
 
 template <typename IGame>

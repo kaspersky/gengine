@@ -99,16 +99,16 @@ MCTS_(MCTSNode<IGame> *root)
 }
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+std::vector<MCTSResults>
 MCTS(const IGame &game, long long iterations)
 {
     MCTSNode<IGame> root(game);
     for (long long i = 0; i < iterations; ++i)
         MCTS_<IGame, RandomPlayout>(&root);
 
-    std::vector<std::pair<game::IMove, std::pair<double, long long>>> results;
+    std::vector<MCTSResults> results;
     for (auto it : root.children)
-        results.emplace_back(it.first, std::pair<double, long long>{it.second->value, it.second->total});
+        results.emplace_back(it.first, it.second->value, it.second->total);
     return results;
 }
 
@@ -172,16 +172,16 @@ MCTS01_(MCTSNode<IGame> *root)
 }
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+std::vector<MCTSResults>
 MCTS01(const IGame &game, long long iterations)
 {
     MCTSNode<IGame> root(game);
     for (long long i = 0; i < iterations; ++i)
         MCTS01_<IGame, RandomPlayout>(&root);
 
-    std::vector<std::pair<game::IMove, std::pair<double, long long>>> results;
+    std::vector<MCTSResults> results;
     for (auto it : root.children)
-        results.emplace_back(it.first, std::pair<double, long long>(it.second->value, it.second->total));
+        results.emplace_back(it.first, it.second->value, it.second->total);
     return results;
 }
 

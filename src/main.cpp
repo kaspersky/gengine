@@ -206,6 +206,6 @@ int main()
     //MCTSTest<ttt::Board>();
     //ManagerTest();
     //CountTest();
-    ABetaBotTest<ttt::Board, generic_bots::Eval<ttt::Board>>();
+    ABetaBotTest<uttt::IBoard, generic_bots::Eval<uttt::IBoard>>();
     //CountUniqueUtttBoardPositions
 }

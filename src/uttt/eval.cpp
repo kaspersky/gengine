@@ -107,8 +107,8 @@ EvalMcts::operator()(const IBoard &board) const
     }
     auto results = MCTS<IBoard>(board, 100);
     double max = -1.1;
-    for (auto it : results)
-        max = std::max(max, it.second.first / it.second.second);
+    for (const auto &result : results)
+        max = std::max(max, result.value / result.total);
     return max;
 }
 

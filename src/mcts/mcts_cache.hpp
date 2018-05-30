@@ -130,7 +130,7 @@ MCTS_cache_(std::unordered_set<GameData<IGame> *, GameDataHash<IGame>, GameDataE
 }
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-std::vector<std::pair<game::IMove, std::pair<double, long long>>>
+std::vector<MCTSResults>
 MCTS_cache(const IGame &game, long long iterations)
 {
     std::unordered_set<GameData<IGame> *, GameDataHash<IGame>, GameDataEqual<IGame>> cache;
@@ -138,9 +138,9 @@ MCTS_cache(const IGame &game, long long iterations)
     cache.insert(game_data);
     for (long long i = 0; i < iterations; ++i)
         MCTS_cache_<IGame, RandomPlayout>(cache, game_data);
-    std::vector<std::pair<game::IMove, std::pair<double, long long>>> results;
+    std::vector<MCTSResults> results;
     for (auto it : game_data->children)
-        results.push_back({it.first, {it.second->value, it.second->total}});
+        results.emplace_back(it.first, it.second->value, it.second->total);
     for (auto it : cache)
         delete it;
     return results;

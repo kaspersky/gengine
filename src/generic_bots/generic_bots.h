@@ -5,26 +5,13 @@
 
 namespace generic_bots {
 
-template <typename IGame, std::vector<std::pair<game::IMove, std::pair<double, long long>>>(*MCTS)(const IGame &, long long)>
+template <typename IGame, std::vector<MCTSResults>(*MCTS)(const IGame &, long long)>
 class FixedMctsBot: public game::IBot<IGame>
 {
     long long num_iterations;
 
 public:
     FixedMctsBot(const IGame *game, long long num_iterations);
-
-    game::IBot<IGame> *Clone() const;
-
-    game::IMove MakeMove();
-};
-
-template <typename IGame>
-class FixedMcts01Bot: public game::IBot<IGame>
-{
-    long long num_iterations;
-
-public:
-    FixedMcts01Bot(const IGame *game, long long num_iterations);
 
     game::IBot<IGame> *Clone() const;
 

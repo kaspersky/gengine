@@ -48,11 +48,11 @@ UtttBot::MakeMove()
     auto results = MCTS(board, mcts_iterations);
     double max = -1.1;
     game::IMove move = -1;
-    for (auto it : results)
+    for (const auto &result : results)
     {
-        auto v = it.second.first / it.second.second;
+        auto v = result.value / result.total;
         if (v > max)
-            max = v, move = it.first;
+            max = v, move = result.move;
     }
     board.ApplyMove(move);
     return move;
