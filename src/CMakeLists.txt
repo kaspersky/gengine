@@ -7,4 +7,4 @@ include_directories("${PROJECT_SOURCE_DIR}/src/ttt")
 include_directories("${PROJECT_SOURCE_DIR}/src/generic_bots")
 
 add_executable(main main.cpp)
-target_link_libraries(main uttt ttt)
+target_link_libraries(main uttt ttt pthread)

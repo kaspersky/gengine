@@ -203,7 +203,7 @@ int main()
 {
     //UtttBoardTest();
     //UtttHashTest();
-    MCTSTest<uttt::IBoard>(100000);
+    MCTSTest<uttt::IBoard>(10000);
     //ManagerTest();
     //CountTest();
     //ABetaBotTest<uttt::IBoard, generic_bots::Eval<uttt::IBoard>>();

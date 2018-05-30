@@ -1,6 +1,8 @@
 #include <vector>
 #include <unordered_map>
 #include <cmath>
+#include <future>
+#include <thread>
 
 #include "mcts.h"
 
@@ -76,12 +78,34 @@ template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 std::vector<MCTSResults>
 MCTS_parallel(const IGame &game, long long iterations)
 {
-    MCTSNode<IGame> root(game);
-    for (long long i = 0; i < iterations; ++i)
-        MCTS_parallel_<IGame, RandomPlayout>(&root);
+    MCTSNode<IGame> node(game);
+
+    std::vector<std::future<std::vector<MCTSResults>>> futures;
+    int num_threads = std::thread::hardware_concurrency();
+    for (int i = 0; i < num_threads; ++i)
+        futures.emplace_back(std::async(std::launch::async, [node, iterations] {
+            auto root = node;
+            for (int i = 0; i < iterations; ++i)
+                MCTS_parallel_<IGame, RandomPlayout>(&root);
+            std::vector<MCTSResults> results;
+            for (auto it : root.children)
+                results.emplace_back(it.first, it.second->value, it.second->total);
+            return results;
+        }));
+
+    std::unordered_map<game::IMove, std::pair<double, long long>> um_results;
+    for (auto &f : futures)
+    {
+        auto result = f.get();
+        for (const auto &r : result)
+        {
+            auto &p = um_results[r.move];
+            p.first += r.value, p.second += r.total;
+        }
+    }
 
     std::vector<MCTSResults> results;
-    for (auto it : root.children)
-        results.emplace_back(it.first, it.second->value, it.second->total);
+    for (auto it : um_results)
+        results.emplace_back(it.first, it.second.first, it.second.second);
     return results;
 }
