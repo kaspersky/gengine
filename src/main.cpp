@@ -25,7 +25,7 @@ UtttBoardTest()
 
 template <typename IGame>
 void
-MCTSTest()
+MCTSTest(long long num_iterations)
 {
     std::unordered_map<game::IMove, std::pair<double, int>> um;
     std::vector<std::pair<game::IMove, std::pair<double, int>>> best;
@@ -35,17 +35,17 @@ MCTSTest()
         std::cout << "Iteration: " << iter << '\n';
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto results = MCTS_parallel<IGame>({}, 1000000);
+        auto results = MCTS_parallel<IGame>({}, num_iterations);
         auto t2 = std::chrono::high_resolution_clock::now();
         long long total = 0;
-        for (auto it : results)
-            total += it.second.second;
+        for (const auto &result : results)
+            total += result.total;
         std::cout << "MCTS done: " << total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
 
-        for (auto it : results)
+        for (const auto &result : results)
         {
-            um[it.first].first += it.second.first / it.second.second;
-            um[it.first].second += it.second.second;
+            um[result.move].first += result.value / result.total;
+            um[result.move].second += result.total;
         }
     }
     for (auto it : um)
@@ -203,9 +203,9 @@ int main()
 {
     //UtttBoardTest();
     //UtttHashTest();
-    //MCTSTest<ttt::Board>();
+    MCTSTest<uttt::IBoard>(100000);
     //ManagerTest();
     //CountTest();
-    ABetaBotTest<uttt::IBoard, generic_bots::Eval<uttt::IBoard>>();
+    //ABetaBotTest<uttt::IBoard, generic_bots::Eval<uttt::IBoard>>();
     //CountUniqueUtttBoardPositions
 }
