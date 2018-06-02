@@ -1,5 +1,6 @@
 #include <cmath>
 #include <unordered_set>
+#include <future>
 
 #include "mcts.h"
 
@@ -87,13 +88,33 @@ template <typename IGame, typename RandomPlayout>
 std::vector<MCTSResults>
 MCTS<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) const
 {
-    MCTSNode root;
-    for (long long i = 0; i < iterations; ++i)
-        MCTS_<IGame, RandomPlayout>(&root, game);
+    std::vector<std::future<std::vector<MCTSResults>>> futures;
+    int num_threads = std::thread::hardware_concurrency();
+    for (int i = 0; i < num_threads; ++i)
+        futures.emplace_back(std::async(std::launch::async, [game, iterations] {
+            MCTSNode root;
+            for (int i = 0; i < iterations; ++i)
+                MCTS_<IGame, RandomPlayout>(&root, game);
+            std::vector<MCTSResults> results;
+            for (auto it : root.children)
+                results.emplace_back(it.first, it.second->value, it.second->total);
+            return results;
+        }));
+
+    std::unordered_map<game::IMove, std::pair<double, long long>> um_results;
+    for (auto &f : futures)
+    {
+        auto result = f.get();
+        for (const auto &r : result)
+        {
+            auto &p = um_results[r.move];
+            p.first += r.value, p.second += r.total;
+        }
+    }
 
     std::vector<MCTSResults> results;
-    for (auto it : root.children)
-        results.emplace_back(it.first, it.second->value, it.second->total);
+    for (auto it : um_results)
+        results.emplace_back(it.first, it.second.first, it.second.second);
     return results;
 }
 
@@ -103,7 +124,7 @@ MCTS01_(MCTSNode *root, const IGame &root_game)
 {
     MCTSNode *node = root;
     auto game = root_game;
-    auto player = root_game.GetPlayerToMove();
+    auto player = 3 - root_game.GetPlayerToMove();
     std::vector<MCTSNode *> nodes = {root};
     while (true)
     {
@@ -164,13 +185,33 @@ template <typename IGame, typename RandomPlayout>
 std::vector<MCTSResults>
 MCTS01<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) const
 {
-    MCTSNode root;
-    for (long long i = 0; i < iterations; ++i)
-        MCTS01_<IGame, RandomPlayout>(&root, game);
+    std::vector<std::future<std::vector<MCTSResults>>> futures;
+    int num_threads = std::thread::hardware_concurrency();
+    for (int i = 0; i < num_threads; ++i)
+        futures.emplace_back(std::async(std::launch::async, [game, iterations] {
+            MCTSNode root;
+            for (int i = 0; i < iterations; ++i)
+                MCTS01_<IGame, RandomPlayout>(&root, game);
+            std::vector<MCTSResults> results;
+            for (auto it : root.children)
+                results.emplace_back(it.first, it.second->value, it.second->total);
+            return results;
+        }));
+
+    std::unordered_map<game::IMove, std::pair<double, long long>> um_results;
+    for (auto &f : futures)
+    {
+        auto result = f.get();
+        for (const auto &r : result)
+        {
+            auto &p = um_results[r.move];
+            p.first += r.value, p.second += r.total;
+        }
+    }
 
     std::vector<MCTSResults> results;
-    for (auto it : root.children)
-        results.emplace_back(it.first, it.second->value, it.second->total);
+    for (auto it : um_results)
+        results.emplace_back(it.first, it.second.first, it.second.second);
     return results;
 }
 
