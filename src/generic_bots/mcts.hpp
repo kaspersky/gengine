@@ -40,7 +40,7 @@ FixedMctsBot<IGame, MCTS>::MakeMove()
 template <typename IGame>
 FixedMctsWithCachingBot<IGame>::FixedMctsWithCachingBot(const IGame *game, long long num_iterations): game::IBot<IGame>(game), num_iterations(num_iterations)
 {
-    root = new MCTSNode;
+    root = new MCTSNode(-1);
 }
 
 template <typename IGame>
@@ -67,7 +67,7 @@ FixedMctsWithCachingBot<IGame>::AdvanceRoot(const game::IMove &move)
     delete root;
     root = new_root;
     if (root == nullptr)
-        root = new MCTSNode;
+        root = new MCTSNode(-1);
 }
 
 template <typename IGame>
@@ -81,9 +81,9 @@ FixedMctsWithCachingBot<IGame>::MakeMove()
     game::IMove move = -1;
     for (auto it : root->children)
     {
-        auto v = it.second->value / it.second->total;
+        auto v = it->value / it->total;
         if (v > max)
-            max = v, move = it.first;
+            max = v, move = it->move;
     }
 
     this->game->ApplyMove(move);

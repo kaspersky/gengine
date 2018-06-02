@@ -38,15 +38,14 @@ MCTS_(MCTSNode *root, const IGame &root_game)
         MCTSNode *child = nullptr;
         double min = 0.0;
         game::IMove move = -1;
-        for (const auto it : node->children)
+        for (auto n : node->children)
         {
-            const MCTSNode *n = it.second;
             double p = static_cast<double>(n->value) / n->total + std::sqrt(2.0 * std::log(node->total) / n->total);
             if (p > min || child == nullptr)
             {
                 min = p;
-                move = it.first;
-                child = it.second;
+                move = n->move;
+                child = n;
             }
         }
         node = child;
@@ -57,16 +56,22 @@ MCTS_(MCTSNode *root, const IGame &root_game)
     if (game.GetStatus() == game::Undecided)
     {
         auto m = game.GetRandomMove();
-        auto it = node->children.find(m);
-        if (it == node->children.end())
+        MCTSNode *it = nullptr;
+        for (auto n : node->children)
+            if (n->move == m)
+            {
+                it = n;
+                break;
+            }
+        if (it == nullptr)
         {
-            auto new_node = new MCTSNode;
+            auto new_node = new MCTSNode(m);
             game.ApplyMove(m);
-            node->children[m] = new_node;
+            node->children.push_back(new_node);
             node = new_node;
         }
         else
-            node = it->second;
+            node = it;
         nodes.push_back(node);
     }
 
@@ -92,12 +97,12 @@ MCTS<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) 
     int num_threads = std::thread::hardware_concurrency();
     for (int i = 0; i < num_threads; ++i)
         futures.emplace_back(std::async(std::launch::async, [game, iterations] {
-            MCTSNode root;
+            MCTSNode root(-1);
             for (int i = 0; i < iterations; ++i)
                 MCTS_<IGame, RandomPlayout>(&root, game);
             std::vector<MCTSResults> results;
             for (auto it : root.children)
-                results.emplace_back(it.first, it.second->value, it.second->total);
+                results.emplace_back(it->move, it->value, it->total);
             return results;
         }));
 
@@ -137,15 +142,14 @@ MCTS01_(MCTSNode *root, const IGame &root_game)
         MCTSNode *child = nullptr;
         double min = 0.0;
         game::IMove move = -1;
-        for (const auto it : node->children)
+        for (auto n : node->children)
         {
-            const MCTSNode *n = it.second;
             double p = static_cast<double>(n->value) / n->total + std::sqrt(2.0 * std::log(node->total) / n->total);
             if (p > min || child == nullptr)
             {
                 min = p;
-                move = it.first;
-                child = it.second;
+                move = n->move;
+                child = n;
             }
         }
         node = child;
@@ -156,16 +160,22 @@ MCTS01_(MCTSNode *root, const IGame &root_game)
     if (game.GetStatus() == game::Undecided)
     {
         auto m = game.GetRandomMove();
-        auto it = node->children.find(m);
-        if (it == node->children.end())
+        MCTSNode *it = nullptr;
+        for (auto n : node->children)
+            if (n->move == m)
+            {
+                it = n;
+                break;
+            }
+        if (it == nullptr)
         {
-            auto new_node = new MCTSNode;
+            auto new_node = new MCTSNode(m);
             game.ApplyMove(m);
-            node->children[m] = new_node;
+            node->children.push_back(new_node);
             node = new_node;
         }
         else
-            node = it->second;
+            node = it;
         nodes.push_back(node);
     }
 
@@ -189,12 +199,12 @@ MCTS01<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations
     int num_threads = std::thread::hardware_concurrency();
     for (int i = 0; i < num_threads; ++i)
         futures.emplace_back(std::async(std::launch::async, [game, iterations] {
-            MCTSNode root;
+            MCTSNode root(-1);
             for (int i = 0; i < iterations; ++i)
                 MCTS01_<IGame, RandomPlayout>(&root, game);
             std::vector<MCTSResults> results;
             for (auto it : root.children)
-                results.emplace_back(it.first, it.second->value, it.second->total);
+                results.emplace_back(it->move, it->value, it->total);
             return results;
         }));
 
@@ -220,11 +230,11 @@ static void
 CountUnique_(const MCTSNode &root, const IGame &game, std::unordered_set<IGame> &set)
 {
     set.insert(game);
-    for (const auto &it : root.children)
+    for (auto it : root.children)
     {
         auto ng = game;
-        ng.ApplyMove(it.first);
-        CountUnique_(it.second, ng, set);
+        ng.ApplyMove(it->move);
+        CountUnique_(it, ng, set);
     }
 }
 

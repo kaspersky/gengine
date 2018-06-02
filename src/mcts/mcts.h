@@ -22,24 +22,25 @@ struct MCTSResults
 
 struct MCTSNode
 {
+    game::IMove move;
     double value;
     long long total;
-    std::unordered_map<game::IMove, MCTSNode *> children;
+    std::vector<MCTSNode *> children;
 
-    MCTSNode(): value(0.0), total(0)
+    MCTSNode(game::IMove move): move(move), value(0.0), total(0)
     {
     }
 
-    MCTSNode(const MCTSNode &other): value(other.value), total(other.total)
+    MCTSNode(const MCTSNode &other): move(other.move), value(other.value), total(other.total)
     {
         for (auto it : other.children)
-            children[it.first] = new MCTSNode(*it.second);
+            children.push_back(new MCTSNode(*it));
     }
 
     ~MCTSNode()
     {
         for (auto it : children)
-            delete it.second;
+            delete it;
     }
 };
 

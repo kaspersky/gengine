@@ -19,15 +19,14 @@ MCTS_parallel_(MCTSNode *root, const IGame &root_game)
         MCTSNode *child = nullptr;
         double min = 0.0;
         game::IMove move = -1;
-        for (const auto &it : node->children)
+        for (auto n : node->children)
         {
-            auto n = it.second;
             double p = static_cast<double>(n->value) / n->total + std::sqrt(2.0 * std::log(node->total) / n->total);
             if (p > min || child == nullptr)
             {
                 min = p;
-                move = it.first;
-                child = it.second;
+                move = n->move;
+                child = n;
             }
         }
         node = child;
@@ -55,10 +54,10 @@ MCTS_parallel_(MCTSNode *root, const IGame &root_game)
     auto moves = game.GetPossibleMoves();
     for (auto m : moves)
     {
-        auto new_node = new MCTSNode;
+        auto new_node = new MCTSNode(m);
         auto new_game = game;
         new_game.ApplyMove(m);
-        node->children[m] = new_node;
+        node->children.push_back(new_node);
         nodes.push_back(new_node);
         auto status = RandomPlayout()(new_game);
         auto p = player;
@@ -84,12 +83,12 @@ MCTS_parallel<IGame, RandomPlayout>::operator()(const IGame &game, long long ite
     int num_threads = std::thread::hardware_concurrency();
     for (int i = 0; i < num_threads; ++i)
         futures.emplace_back(std::async(std::launch::async, [game, iterations] {
-            MCTSNode root;
+            MCTSNode root(-1);
             for (int i = 0; i < iterations; ++i)
                 MCTS_parallel_<IGame, RandomPlayout>(&root, game);
             std::vector<MCTSResults> results;
             for (auto it : root.children)
-                results.emplace_back(it.first, it.second->value, it.second->total);
+                results.emplace_back(it->move, it->value, it->total);
             return results;
         }));
 
