@@ -7,7 +7,7 @@
 #include "mcts.h"
 
 template <typename IGame, typename RandomPlayout>
-void
+static void
 MCTS_parallel_(MCTSNode<IGame> *root)
 {
     MCTSNode<IGame> *node = root;
@@ -74,9 +74,9 @@ MCTS_parallel_(MCTSNode<IGame> *root)
     }
 }
 
-template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
+template <typename IGame, typename RandomPlayout>
 std::vector<MCTSResults>
-MCTS_parallel(const IGame &game, long long iterations)
+MCTS_parallel<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) const
 {
     MCTSNode<IGame> node(game);
 

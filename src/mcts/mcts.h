@@ -42,20 +42,28 @@ struct RandomPlayout
 };
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-std::vector<MCTSResults>
-MCTS(const IGame &game, long long iterations);
+struct MCTS
+{
+    std::vector<MCTSResults> operator()(const IGame &game, long long iterations) const;
+};
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-std::vector<MCTSResults>
-MCTS01(const IGame &game, long long iterations);
+struct MCTS01
+{
+    std::vector<MCTSResults> operator()(const IGame &game, long long iterations) const;
+};
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-std::vector<MCTSResults>
-MCTS_parallel(const IGame &game, long long iterations);
+struct MCTS_parallel
+{
+    std::vector<MCTSResults> operator()(const IGame &game, long long iterations) const;
+};
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-std::vector<MCTSResults>
-MCTS_cache(const IGame &game, long long iterations);
+struct MCTS_cache
+{
+    std::vector<MCTSResults> operator()(const IGame &game, long long iterations) const;
+};
 
 template <typename IGame>
 long long

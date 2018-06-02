@@ -38,7 +38,7 @@ MCTSNode<IGame>::~MCTSNode()
 }
 
 template <typename IGame, typename RandomPlayout>
-void
+static void
 MCTS_(MCTSNode<IGame> *root)
 {
     MCTSNode<IGame> *node = root;
@@ -98,9 +98,9 @@ MCTS_(MCTSNode<IGame> *root)
     }
 }
 
-template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
+template <typename IGame, typename RandomPlayout>
 std::vector<MCTSResults>
-MCTS(const IGame &game, long long iterations)
+MCTS<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) const
 {
     MCTSNode<IGame> root(game);
     for (long long i = 0; i < iterations; ++i)
@@ -113,7 +113,7 @@ MCTS(const IGame &game, long long iterations)
 }
 
 template <typename IGame, typename RandomPlayout>
-void
+static void
 MCTS01_(MCTSNode<IGame> *root)
 {
     MCTSNode<IGame> *node = root;
@@ -171,9 +171,9 @@ MCTS01_(MCTSNode<IGame> *root)
     }
 }
 
-template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
+template <typename IGame, typename RandomPlayout>
 std::vector<MCTSResults>
-MCTS01(const IGame &game, long long iterations)
+MCTS01<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) const
 {
     MCTSNode<IGame> root(game);
     for (long long i = 0; i < iterations; ++i)

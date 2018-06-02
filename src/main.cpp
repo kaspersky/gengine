@@ -10,20 +10,21 @@
 #include <manager.h>
 #include <generic_bots.h>
 
+template <typename IGame>
 void
-UtttBoardTest()
+BoardTest()
 {
-    uttt::IBoard board;
-    board.Print();
+    IGame game;
+    game.Print();
     std::vector<game::IMove> moves;
-    while (board.GetStatus() == game::Undecided)
+    while (game.GetStatus() == game::Undecided)
     {
-        board.ApplyMove(board.GetRandomMove());
-        board.Print();
+        game.ApplyMove(game.GetRandomMove());
+        game.Print();
     }
 }
 
-template <typename IGame>
+template <typename IGame, typename MCTS>
 void
 MCTSTest(long long num_iterations)
 {
@@ -35,7 +36,7 @@ MCTSTest(long long num_iterations)
         std::cout << "Iteration: " << iter << '\n';
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto results = MCTS_parallel<IGame>({}, num_iterations);
+        auto results = MCTS()({}, num_iterations);
         auto t2 = std::chrono::high_resolution_clock::now();
         long long total = 0;
         for (const auto &result : results)
@@ -62,7 +63,7 @@ ManagerTest()
     manager::Manager<uttt::IBoard> manager(game);
 
     std::vector<game::IBot<uttt::IBoard> *> bots;
-    bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_parallel>(game, 1000));
+    bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_parallel<uttt::IBoard>>(game, 1000));
     bots.emplace_back(new generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1>(game, 9));
 
     std::vector<long long> bot_ids;
@@ -201,9 +202,9 @@ UtttHashTest()
 
 int main()
 {
-    //UtttBoardTest();
+    //BoardTest<ConnectFourState>();
     //UtttHashTest();
-    MCTSTest<uttt::IBoard>(10000);
+    MCTSTest<uttt::IBoard, MCTS_parallel<uttt::IBoard>>(20000);
     //ManagerTest();
     //CountTest();
     //ABetaBotTest<uttt::IBoard, generic_bots::Eval<uttt::IBoard>>();

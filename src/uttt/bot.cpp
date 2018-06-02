@@ -45,7 +45,7 @@ UtttBot::UtttBot(const UtttBot &other): game::IBot<IBoard>(other), board(other.b
 game::IMove
 UtttBot::MakeMove()
 {
-    auto results = MCTS(board, mcts_iterations);
+    auto results = MCTS<IBoard>()(board, mcts_iterations);
     double max = -1.1;
     game::IMove move = -1;
     for (const auto &result : results)

@@ -5,7 +5,7 @@
 
 namespace generic_bots {
 
-template <typename IGame, std::vector<MCTSResults>(*MCTS)(const IGame &, long long)>
+template <typename IGame, typename MCTS>
 class FixedMctsBot: public game::IBot<IGame>
 {
     long long num_iterations;
