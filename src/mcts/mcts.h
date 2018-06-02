@@ -20,19 +20,27 @@ struct MCTSResults
     }
 };
 
-template <typename IGame>
 struct MCTSNode
 {
-    IGame game;
     double value;
     long long total;
     std::unordered_map<game::IMove, MCTSNode *> children;
 
-    MCTSNode(const IGame &game);
+    MCTSNode(): value(0.0), total(0)
+    {
+    }
 
-    MCTSNode(const MCTSNode &other);
+    MCTSNode(const MCTSNode &other): value(other.value), total(other.total)
+    {
+        for (auto it : other.children)
+            children[it.first] = new MCTSNode(*it.second);
+    }
 
-    ~MCTSNode();
+    ~MCTSNode()
+    {
+        for (auto it : children)
+            delete it.second;
+    }
 };
 
 template <typename IGame>
@@ -67,7 +75,7 @@ struct MCTS_cache
 
 template <typename IGame>
 long long
-CountUnique(const MCTSNode<IGame> *root);
+CountUnique(const MCTSNode &root, const IGame &game);
 
 #include "mcts.hpp"
 #include "mcts_parallel.hpp"

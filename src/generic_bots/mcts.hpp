@@ -40,15 +40,15 @@ FixedMctsBot<IGame, MCTS>::MakeMove()
 template <typename IGame>
 FixedMctsWithCachingBot<IGame>::FixedMctsWithCachingBot(const IGame *game, long long num_iterations): game::IBot<IGame>(game), num_iterations(num_iterations)
 {
-    root = new MCTSNode<IGame>(game);
+    root = new MCTSNode;
 }
 
 template <typename IGame>
-FixedMctsWithCachingBot<IGame>::FixedMctsWithCachingBot(const IGame *game, long long num_iterations, const MCTSNode<IGame> *root): game::IBot<IGame>(game), num_iterations(num_iterations)
+FixedMctsWithCachingBot<IGame>::FixedMctsWithCachingBot(const IGame *game, long long num_iterations, const MCTSNode *root): game::IBot<IGame>(game), num_iterations(num_iterations)
 {
     this->root = nullptr;
     if (root != nullptr)
-        this->root = new MCTSNode<IGame>(*root);
+        this->root = new MCTSNode(*root);
 }
 
 template <typename IGame>
@@ -62,12 +62,12 @@ template <typename IGame>
 void
 FixedMctsWithCachingBot<IGame>::AdvanceRoot(const game::IMove &move)
 {
-    MCTSNode<IGame> *new_root = root->children[move];
+    MCTSNode *new_root = root->children[move];
     root->children[move] = nullptr;
     delete root;
     root = new_root;
     if (root == nullptr)
-        root = new MCTSNode<IGame>(this->game);
+        root = new MCTSNode;
 }
 
 template <typename IGame>
