@@ -44,7 +44,7 @@ MCTS_(MCTSNode *root, const IGame &root_game)
             if (p > min || child == nullptr)
             {
                 min = p;
-                move = it.second->move;
+                move = it.first;
                 child = it.second;
             }
         }
@@ -59,7 +59,7 @@ MCTS_(MCTSNode *root, const IGame &root_game)
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
-            auto new_node = new MCTSNode(m);
+            auto new_node = new MCTSNode;
             game.ApplyMove(m);
             node->children.emplace(m, new_node);
             node = new_node;
@@ -91,7 +91,7 @@ MCTS<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) 
     int num_threads = std::thread::hardware_concurrency();
     for (int i = 0; i < num_threads; ++i)
         futures.emplace_back(std::async(std::launch::async, [game, iterations] {
-            MCTSNode root(-1);
+            MCTSNode root;
             for (int i = 0; i < iterations; ++i)
                 MCTS_<IGame, RandomPlayout>(&root, game);
             std::vector<MCTSResults> results;
@@ -142,7 +142,7 @@ MCTS01_(MCTSNode *root, const IGame &root_game)
             if (p > min || child == nullptr)
             {
                 min = p;
-                move = it.second->move;
+                move = it.first;
                 child = it.second;
             }
         }
@@ -187,7 +187,7 @@ MCTS01<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations
     int num_threads = std::thread::hardware_concurrency();
     for (int i = 0; i < num_threads; ++i)
         futures.emplace_back(std::async(std::launch::async, [game, iterations] {
-            MCTSNode root(-1);
+            MCTSNode root;
             for (int i = 0; i < iterations; ++i)
                 MCTS01_<IGame, RandomPlayout>(&root, game);
             std::vector<MCTSResults> results;
