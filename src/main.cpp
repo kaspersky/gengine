@@ -118,13 +118,14 @@ CountTest()
     }
 }
 
+template <typename IGame>
 void
-CountUniqueUtttBoardPositions()
+CountUniqueBoardPositions()
 {
     int depth = 20;
     long long total = 1;
-    std::unordered_set<uttt::IBoard> set, next_set;
-    set.insert(uttt::IBoard());
+    std::unordered_set<IGame> set, next_set;
+    set.insert({{}});
     for (int i = 0; i < depth; ++i)
     {
         std::cout << "Working on depth: " << i + 1 << '\n';
@@ -151,16 +152,16 @@ CountUniqueUtttBoardPositions()
     }
 }
 
-template <typename IGame, typename Eval>
+template <typename IBot, typename IGame>
 void
-ABetaBotTest()
+BotTest()
 {
     IGame game;
     for (int i = 1; i < 13; ++i)
     {
-        generic_bots::ABetaBot<IGame, Eval> abeta(&game, i);
+        IBot bot(&game, i);
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto m = abeta.MakeMove();
+        auto m = bot.MakeMove();
         auto t2 = std::chrono::high_resolution_clock::now();
         auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         std::cout << "Depth: " << i << " in " << millis << " milliseconds\n";
@@ -205,11 +206,11 @@ UtttHashTest()
 
 int main()
 {
-    //BoardTest<ConnectFourState>();
+    //BoardTest<uttt::IBoard>();
     //UtttHashTest();
     MCTSTest<uttt::IBoard, MCTS_parallel<uttt::IBoard, uttt::RandomPlayout>>(20000);
     //ManagerTest();
     //CountTest();
-    //ABetaBotTest<uttt::IBoard, generic_bots::Eval<uttt::IBoard>>();
-    //CountUniqueUtttBoardPositions
+    //BotTest<generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1>, uttt::IBoard>();
+    //CountUniqueBoardPositions<uttt::IBoard>();
 }
