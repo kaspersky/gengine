@@ -14,12 +14,15 @@ template <typename IGame>
 void
 BoardTest()
 {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
     IGame game;
     game.Print();
     std::vector<game::IMove> moves;
     while (game.GetStatus() == game::Undecided)
     {
-        game.ApplyMove(game.GetRandomMove());
+        auto moves = game.GetPossibleMoves();
+        game.ApplyMove(moves[std::uniform_int_distribution<>(0, moves.size() - 1)(gen)]);
         game.Print();
     }
 }
@@ -204,7 +207,7 @@ int main()
 {
     //BoardTest<ConnectFourState>();
     //UtttHashTest();
-    MCTSTest<uttt::IBoard, MCTS_cache<uttt::IBoard, uttt::RandomPlayout>>(20000);
+    MCTSTest<uttt::IBoard, MCTS_parallel<uttt::IBoard, uttt::RandomPlayout>>(20000);
     //ManagerTest();
     //CountTest();
     //ABetaBotTest<uttt::IBoard, generic_bots::Eval<uttt::IBoard>>();

@@ -37,8 +37,6 @@ public:
 
     int GetMoveCount() const;
 
-    game::IMove GetRandomMove() const;
-
     void ApplyMove(const game::IMove &move);
 
     int GetStatus() const;

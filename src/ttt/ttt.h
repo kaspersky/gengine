@@ -23,8 +23,6 @@ public:
 
     void ApplyMove(const game::IMove &move);
 
-    game::IMove GetRandomMove() const;
-
     std::vector<game::IMove> GetPossibleMoves() const;
 
     int GetMoveCount() const;

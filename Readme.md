@@ -13,9 +13,6 @@ void ApplyMove(const IMove &move);
 std::vector<IMove> GetPossibleMoves() const;
 int GetMoveCount() const;
 
-// Used for the Monte Carlo Tree Search algorithm
-IMove GetRandomMove() const;
-
 // By convention, the return value should be:
 // game::Undecided, for an unfinished game
 // game::Draw, for a draw

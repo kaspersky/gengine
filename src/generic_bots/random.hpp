@@ -18,7 +18,10 @@ template <typename IGame>
 game::IMove
 RandomBot<IGame>::MakeMove()
 {
-    auto move = this->game->GetRandomMove();
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    auto moves = this->game->GetPossibleMoves();
+    auto move = moves[std::uniform_int_distribution<>(0, moves.size() - 1)(gen)];
     this->game->ApplyMove(move);
     return move;
 }

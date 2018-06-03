@@ -1,6 +1,7 @@
 #include <cmath>
 #include <unordered_set>
 #include <future>
+#include <random>
 
 #include "mcts.h"
 
@@ -8,12 +9,15 @@ template <typename IGame>
 int
 RandomPlayout<IGame>::operator()(const IGame &game) const
 {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+
     auto ngame(game);
     int status = ngame.GetStatus();
     while (status == game::Undecided)
     {
-        auto m = ngame.GetRandomMove();
-        ngame.ApplyMove(m);
+        auto moves = ngame.GetPossibleMoves();
+        ngame.ApplyMove(moves[std::uniform_int_distribution<>(0, moves.size() - 1)(gen)]);
         status = ngame.GetStatus();
     }
     return status;
@@ -21,7 +25,7 @@ RandomPlayout<IGame>::operator()(const IGame &game) const
 
 template <typename IGame, typename RandomPlayout>
 static void
-MCTS_(MCTSNode *root, const IGame &root_game)
+MCTS_(MCTSNode *root, const IGame &root_game, std::mt19937 &gen)
 {
     MCTSNode *node = root;
     auto game = root_game;
@@ -55,7 +59,8 @@ MCTS_(MCTSNode *root, const IGame &root_game)
 
     if (game.GetStatus() == game::Undecided)
     {
-        auto m = game.GetRandomMove();
+        auto moves = game.GetPossibleMoves();
+        auto m = moves[std::uniform_int_distribution<>(0, moves.size() - 1)(gen)];
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
@@ -91,9 +96,12 @@ MCTS<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) 
     int num_threads = std::thread::hardware_concurrency();
     for (int i = 0; i < num_threads; ++i)
         futures.emplace_back(std::async(std::launch::async, [game, iterations] {
+            std::random_device rd;
+            std::mt19937 gen(rd());
+
             MCTSNode root;
             for (int i = 0; i < iterations; ++i)
-                MCTS_<IGame, RandomPlayout>(&root, game);
+                MCTS_<IGame, RandomPlayout>(&root, game, gen);
             std::vector<MCTSResults> results;
             for (const auto &it : root.children)
                 results.emplace_back(it.first, it.second->value, it.second->total);
@@ -119,7 +127,7 @@ MCTS<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) 
 
 template <typename IGame, typename RandomPlayout>
 static void
-MCTS01_(MCTSNode *root, const IGame &root_game)
+MCTS01_(MCTSNode *root, const IGame &root_game, std::mt19937 &gen)
 {
     MCTSNode *node = root;
     auto game = root_game;
@@ -153,7 +161,8 @@ MCTS01_(MCTSNode *root, const IGame &root_game)
 
     if (game.GetStatus() == game::Undecided)
     {
-        auto m = game.GetRandomMove();
+        auto moves = game.GetPossibleMoves();
+        auto m = moves[std::uniform_int_distribution<>(0, moves.size() - 1)(gen)];
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
@@ -187,9 +196,11 @@ MCTS01<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations
     int num_threads = std::thread::hardware_concurrency();
     for (int i = 0; i < num_threads; ++i)
         futures.emplace_back(std::async(std::launch::async, [game, iterations] {
+            std::random_device rd;
+            std::mt19937 gen(rd());
             MCTSNode root;
             for (int i = 0; i < iterations; ++i)
-                MCTS01_<IGame, RandomPlayout>(&root, game);
+                MCTS01_<IGame, RandomPlayout>(&root, game, gen);
             std::vector<MCTSResults> results;
             for (const auto &it : root.children)
                 results.emplace_back(it.first, it.second->value, it.second->total);

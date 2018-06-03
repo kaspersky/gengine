@@ -311,16 +311,6 @@ IBoard::GetMoveCount() const
     return GetPossibleMoves().size();
 }
 
-game::IMove
-IBoard::GetRandomMove() const
-{
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-
-    auto moves = GetPossibleMoves();
-    return moves[std::uniform_int_distribution<>(0, moves.size() - 1)(gen)];
-}
-
 void
 IBoard::ApplyMove(const game::IMove &move)
 {
@@ -380,14 +370,17 @@ RandomPlayout::operator()(const uttt::IBoard &game) const
 int
 RandomPlayout2::operator()(const uttt::IBoard &game) const
 {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+
     auto ngame(game);
     int status = ngame.GetStatus();
     while (status == game::Undecided)
     {
         if (g_is_definitive_draw[ngame.macro])
             return game::Draw;
-        auto m = ngame.GetRandomMove();
-        ngame.ApplyMove(m);
+        auto moves = ngame.GetPossibleMoves();
+        ngame.ApplyMove(moves[std::uniform_int_distribution<>(0, moves.size() - 1)(gen)]);
         status = ngame.GetStatus();
     }
     return status;
