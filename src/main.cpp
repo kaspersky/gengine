@@ -204,7 +204,7 @@ int main()
 {
     //BoardTest<ConnectFourState>();
     //UtttHashTest();
-    MCTSTest<uttt::IBoard, MCTS<uttt::IBoard>>(100000);
+    MCTSTest<uttt::IBoard, MCTS_cache<uttt::IBoard, uttt::RandomPlayout>>(20000);
     //ManagerTest();
     //CountTest();
     //ABetaBotTest<uttt::IBoard, generic_bots::Eval<uttt::IBoard>>();

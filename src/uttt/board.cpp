@@ -22,6 +22,7 @@ static int g_macro_rotated_clockwise_90[262144];
 static int g_macro_mirrored_vertical[262144];
 static std::size_t g_hash[9][19683];
 static std::size_t g_hash4[262144];
+static bool g_is_definitive_draw[262144];
 
 TBoard
 makeBoard(short k)
@@ -114,6 +115,30 @@ getMacroBoardStatus(const TBoard &board)
     return 3;
 }
 
+static void
+InitIsDefinitiveDraw()
+{
+    for (int i = 0; i < 262144; ++i)
+    {
+        g_is_definitive_draw[i] = false;
+        auto board = makeBoard4(i);
+        for (int u = 0; u < 3; ++u)
+            for (int v = 0; v < 3; ++v)
+                if (board[u][v] == 0)
+                    board[u][v] = 1;
+        if (g_macro_board_status[TBoardToInt4(board)] != 3)
+            continue;
+        board = makeBoard4(i);
+        for (int u = 0; u < 3; ++u)
+            for (int v = 0; v < 3; ++v)
+                if (board[u][v] == 0)
+                    board[u][v] = 1;
+        if (g_macro_board_status[TBoardToInt4(board)] != 3)
+            continue;
+        g_is_definitive_draw[i] = true;
+    }
+}
+
 struct UtttInit
 {
     UtttInit()
@@ -156,7 +181,7 @@ struct UtttInit
             g_macro_mirrored_vertical[i] = TBoardToInt4(board);
         }
 
-        InitBot();
+        InitIsDefinitiveDraw();
         InitEval1();
     }
 };
@@ -323,6 +348,49 @@ game::IPlayer
 IBoard::GetPlayerToMove() const
 {
     return player;
+}
+
+int
+RandomPlayout::operator()(const uttt::IBoard &game) const
+{
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+
+    auto ngame(game);
+    int status = ngame.GetStatus();
+    while (status == game::Undecided)
+    {
+        game::IMove m = -1;
+        if (ngame.next >= 0)
+            m = ngame.next * 9 + g_moves[ngame.micro[ngame.next]][std::uniform_int_distribution<>(0, g_moves[ngame.micro[ngame.next]].size() - 1)(gen)];
+        else
+        {
+            std::vector<game::IMove> moves;
+            for (int i = 0; i < 9; i++)
+                if (!g_moves[ngame.micro[i]].empty())
+                    moves.push_back(i * 9 + g_moves[ngame.micro[i]][std::uniform_int_distribution<>(0, g_moves[ngame.micro[i]].size() - 1)(gen)]);
+            m = moves[std::uniform_int_distribution<>(0, moves.size() - 1)(gen)];
+        }
+        ngame.ApplyMove(m);
+        status = ngame.GetStatus();
+    }
+    return status;
+}
+
+int
+RandomPlayout2::operator()(const uttt::IBoard &game) const
+{
+    auto ngame(game);
+    int status = ngame.GetStatus();
+    while (status == game::Undecided)
+    {
+        if (g_is_definitive_draw[ngame.macro])
+            return game::Draw;
+        auto m = ngame.GetRandomMove();
+        ngame.ApplyMove(m);
+        status = ngame.GetStatus();
+    }
+    return status;
 }
 
 }

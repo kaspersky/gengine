@@ -8,11 +8,13 @@
 namespace uttt {
 
 struct RandomPlayout;
+struct RandomPlayout2;
 struct Eval1;
 
 class IBoard
 {
     friend RandomPlayout;
+    friend RandomPlayout2;
     friend Eval1;
 
     int macro;
@@ -77,6 +79,11 @@ struct EvalMcts
 };
 
 struct RandomPlayout
+{
+    int operator()(const uttt::IBoard &game) const;
+};
+
+struct RandomPlayout2
 {
     int operator()(const uttt::IBoard &game) const;
 };

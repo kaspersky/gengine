@@ -2,32 +2,6 @@
 #include "uttt.h"
 #include "utttp.h"
 
-static bool g_is_definitive_draw[262144];
-
-void
-InitBot()
-{
-    for (int i = 0; i < 262144; ++i)
-    {
-        g_is_definitive_draw[i] = false;
-        auto board = makeBoard4(i);
-        for (int u = 0; u < 3; ++u)
-            for (int v = 0; v < 3; ++v)
-                if (board[u][v] == 0)
-                    board[u][v] = 1;
-        if (g_macro_board_status[TBoardToInt4(board)] != 3)
-            continue;
-        board = makeBoard4(i);
-        for (int u = 0; u < 3; ++u)
-            for (int v = 0; v < 3; ++v)
-                if (board[u][v] == 0)
-                    board[u][v] = 1;
-        if (g_macro_board_status[TBoardToInt4(board)] != 3)
-            continue;
-        g_is_definitive_draw[i] = true;
-    }
-}
-
 namespace uttt {
 
 UtttBot::UtttBot(long long mcts_iterations): game::IBot<IBoard>(nullptr), mcts_iterations(mcts_iterations)
@@ -68,22 +42,6 @@ game::IBot<IBoard> *
 UtttBot::Clone() const
 {
     return new UtttBot(*this);
-}
-
-int
-RandomPlayout::operator()(const uttt::IBoard &game) const
-{
-    auto ngame(game);
-    int status = ngame.GetStatus();
-    while (status == game::Undecided)
-    {
-        if (g_is_definitive_draw[ngame.macro])
-            return game::Draw;
-        auto m = ngame.GetRandomMove();
-        ngame.ApplyMove(m);
-        status = ngame.GetStatus();
-    }
-    return status;
 }
 
 }
