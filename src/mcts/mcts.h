@@ -25,7 +25,7 @@ struct MCTSNode
     game::IMove move;
     double value;
     long long total;
-    std::vector<MCTSNode *> children;
+    std::unordered_map<game::IMove, MCTSNode *> children;
 
     MCTSNode(game::IMove move): move(move), value(0.0), total(0)
     {
@@ -34,13 +34,13 @@ struct MCTSNode
     MCTSNode(const MCTSNode &other): move(other.move), value(other.value), total(other.total)
     {
         for (auto it : other.children)
-            children.push_back(new MCTSNode(*it));
+            children.emplace(it.first, new MCTSNode(*it.second));
     }
 
     ~MCTSNode()
     {
         for (auto it : children)
-            delete it;
+            delete it.second;
     }
 };
 

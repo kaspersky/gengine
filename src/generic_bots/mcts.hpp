@@ -79,11 +79,11 @@ FixedMctsWithCachingBot<IGame>::MakeMove()
 
     double max = -1.1;
     game::IMove move = -1;
-    for (auto it : root->children)
+    for (const auto &it : root->children)
     {
-        auto v = it->value / it->total;
+        auto v = it.second->value / it.second->total;
         if (v > max)
-            max = v, move = it->move;
+            max = v, move = it.first;
     }
 
     this->game->ApplyMove(move);
