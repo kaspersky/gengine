@@ -1,3 +1,5 @@
+Build: [![Build Status](https://travis-ci.org/kaspersky/gengine.png)](https://travis-ci.org/kaspersky/gengine)
+
 # Introduction
 
 # IGame interface
