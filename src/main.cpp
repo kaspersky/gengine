@@ -68,7 +68,7 @@ ManagerTest()
 
     std::vector<game::IBot<uttt::IBoard> *> bots;
     bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_parallel<uttt::IBoard>>(&game, 1000));
-    bots.emplace_back(new generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1>(&game, 9));
+    bots.emplace_back(new generic_bots::MinimaxBot<uttt::IBoard, minimax::ABeta<uttt::IBoard, uttt::Eval1>>(&game, 9));
 
     std::vector<long long> bot_ids;
     for (auto bot : bots)
@@ -210,6 +210,6 @@ int main()
     //MCTSTest<uttt::IBoard, MCTS_parallel<uttt::IBoard, uttt::RandomPlayout>>(20000);
     //ManagerTest<uttt::IBoard>();
     //CountTest();
-    BotTest<generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1>, uttt::IBoard>();
+    BotTest<generic_bots::MinimaxBot<uttt::IBoard, minimax::ABeta<uttt::IBoard, uttt::Eval1>>, uttt::IBoard>();
     //CountUniqueBoardPositions<uttt::IBoard>();
 }

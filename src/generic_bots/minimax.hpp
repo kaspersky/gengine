@@ -3,7 +3,7 @@
 
 namespace generic_bots {
 
-template <typename IGame, typename Eval=minimax::Eval<IGame>>
+template <typename IGame, typename Minimax>
 class MinimaxBot: public game::IBot<IGame>
 {
     int depth;
@@ -20,7 +20,7 @@ public:
 
     game::IMove MakeMove()
     {
-        auto r = minimax::Minimax<IGame, Eval>(*this->game, depth);
+        auto r = Minimax()(*this->game, depth);
         this->game->ApplyMove(r.second);
         return r.second;
     }

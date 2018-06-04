@@ -1,10 +1,8 @@
 #include "minimax.h"
 
-namespace minimax {
-
 template <typename IGame, typename Eval>
-std::pair<double, game::IMove>
-Minimax(const IGame &game, int depth)
+static std::pair<double, game::IMove>
+Minimax_(const IGame &game, int depth)
 {
     Eval evaluator;
 
@@ -27,12 +25,21 @@ Minimax(const IGame &game, int depth)
     {
         IGame new_game(game);
         new_game.ApplyMove(m);
-        auto r = Minimax<IGame, Eval>(new_game, depth - 1);
+        auto r = Minimax_<IGame, Eval>(new_game, depth - 1);
         if (result.second == -1 || -r.first > result.first)
             result = {-r.first, m};
     }
 
     return result;
+}
+
+namespace minimax {
+
+template <typename IGame, typename Eval>
+std::pair<double, game::IMove>
+Minimax<IGame, Eval>::operator()(const IGame &game, int depth) const
+{
+    return Minimax_(game, depth);
 }
 
 }

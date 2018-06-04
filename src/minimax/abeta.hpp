@@ -1,8 +1,8 @@
-namespace minimax {
+#include "minimax.h"
 
 template <typename IGame, typename Eval>
-std::pair<double, game::IMove>
-ABeta(const IGame &game, int depth, double alfa, double beta)
+static std::pair<double, game::IMove>
+ABeta_(const IGame &game, int depth, double alfa, double beta)
 {
     Eval evaluator;
 
@@ -26,7 +26,7 @@ ABeta(const IGame &game, int depth, double alfa, double beta)
     {
         IGame new_game(game);
         new_game.ApplyMove(m);
-        auto r = ABeta<IGame, Eval>(new_game, depth - 1, -beta, -alfa);
+        auto r = ABeta_<IGame, Eval>(new_game, depth - 1, -beta, -alfa);
         if (result.second == -1 || -r.first > result.first)
             result = {-r.first, m};
         alfa = std::max(alfa, -r.first);
@@ -35,6 +35,15 @@ ABeta(const IGame &game, int depth, double alfa, double beta)
     }
 
     return result;
+}
+
+namespace minimax {
+
+template <typename IGame, typename Eval>
+std::pair<double, game::IMove>
+ABeta<IGame, Eval>::operator()(const IGame &game, int depth) const
+{
+    return ABeta_<IGame, Eval>(game, depth, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
 }
 
 }
