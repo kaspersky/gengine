@@ -305,12 +305,6 @@ IBoard::GetPossibleMoves() const
     return moves;
 }
 
-int
-IBoard::GetMoveCount() const
-{
-    return GetPossibleMoves().size();
-}
-
 void
 IBoard::ApplyMove(const game::IMove &move)
 {

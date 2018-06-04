@@ -35,8 +35,7 @@ MCTS_(MCTSNode *root, const IGame &root_game, std::mt19937 &gen)
     {
         if (game.GetStatus() != game::Undecided)
             break;
-        int s = game.GetMoveCount();
-        if (static_cast<int>(node->children.size()) < s)
+        if (int(node->children.size()) < node->move_count)
             break;
 
         MCTSNode *child = nullptr;
@@ -64,8 +63,8 @@ MCTS_(MCTSNode *root, const IGame &root_game, std::mt19937 &gen)
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
-            auto new_node = new MCTSNode;
             game.ApplyMove(m);
+            auto new_node = new MCTSNode(game.GetPossibleMoves().size());
             node->children.emplace(m, new_node);
             node = new_node;
         }
@@ -99,7 +98,7 @@ MCTS<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) 
             std::random_device rd;
             std::mt19937 gen(rd());
 
-            MCTSNode root;
+            MCTSNode root(game.GetPossibleMoves().size());
             for (int i = 0; i < iterations; ++i)
                 MCTS_<IGame, RandomPlayout>(&root, game, gen);
             std::vector<MCTSResults> results;
@@ -137,8 +136,7 @@ MCTS01_(MCTSNode *root, const IGame &root_game, std::mt19937 &gen)
     {
         if (game.GetStatus() != game::Undecided)
             break;
-        int s = game.GetMoveCount();
-        if (static_cast<int>(node->children.size()) < s)
+        if (int(node->children.size()) < node->move_count)
             break;
 
         MCTSNode *child = nullptr;
@@ -166,8 +164,8 @@ MCTS01_(MCTSNode *root, const IGame &root_game, std::mt19937 &gen)
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
-            auto new_node = new MCTSNode;
             game.ApplyMove(m);
+            auto new_node = new MCTSNode(game.GetPossibleMoves().size());
             node->children.emplace(m, new_node);
             node = new_node;
         }

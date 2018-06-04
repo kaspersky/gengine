@@ -24,9 +24,10 @@ struct MCTSNode
 {
     double value;
     long long total;
+    int move_count;
     std::unordered_map<game::IMove, MCTSNode *> children;
 
-    MCTSNode(): value(0.0), total(0)
+    MCTSNode(int move_count): value(0.0), total(0), move_count(move_count)
     {
     }
 

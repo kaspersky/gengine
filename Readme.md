@@ -13,7 +13,6 @@ IGame(const IGame &other);
 bool operator==(const IGame &other) const;
 void ApplyMove(const IMove &move);
 std::vector<IMove> GetPossibleMoves() const;
-int GetMoveCount() const;
 
 // By convention, the return value should be:
 // game::Undecided, for an unfinished game

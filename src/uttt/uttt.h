@@ -35,8 +35,6 @@ public:
 
     std::vector<game::IMove> GetPossibleMoves() const;
 
-    int GetMoveCount() const;
-
     void ApplyMove(const game::IMove &move);
 
     int GetStatus() const;

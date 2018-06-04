@@ -207,7 +207,7 @@ int main()
 {
     //BoardTest<uttt::IBoard>();
     //UtttHashTest();
-    MCTSTest<uttt::IBoard, MCTS_parallel<uttt::IBoard, uttt::RandomPlayout>>(100000);
+    MCTSTest<uttt::IBoard, MCTS<uttt::IBoard, uttt::RandomPlayout>>(100000);
     //ManagerTest<uttt::IBoard>();
     //CountTest();
     //BotTest<generic_bots::MinimaxBot<uttt::IBoard, minimax::ABeta<uttt::IBoard, uttt::Eval1>>, uttt::IBoard>();
