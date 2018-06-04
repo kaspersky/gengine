@@ -20,9 +20,9 @@ public:
 
     game::IMove MakeMove()
     {
-        auto r = Minimax()(*this->game, depth);
-        this->game->ApplyMove(r.second);
-        return r.second;
+        auto move = Minimax()(*this->game, depth)[0].first;
+        this->game->ApplyMove(move);
+        return move;
     }
 };
 

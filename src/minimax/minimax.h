@@ -8,13 +8,13 @@ struct Eval;
 template <typename IGame, typename Eval=Eval<IGame>>
 struct Minimax
 {
-    std::pair<double, game::IMove> operator()(const IGame &game, int depth) const;
+    std::vector<std::pair<game::IMove, double>> operator()(const IGame &game, int depth) const;
 };
 
 template <typename IGame, typename Eval=Eval<IGame>>
 struct ABeta
 {
-    std::pair<double, game::IMove> operator()(const IGame &game, int depth) const;
+    std::vector<std::pair<game::IMove, double>> operator()(const IGame &game, int depth) const;
 };
 
 template <typename IGame>
