@@ -5,6 +5,7 @@ include_directories("${PROJECT_SOURCE_DIR}/src/manager")
 include_directories("${PROJECT_SOURCE_DIR}/src/uttt")
 include_directories("${PROJECT_SOURCE_DIR}/src/ttt")
 include_directories("${PROJECT_SOURCE_DIR}/src/generic_bots")
+include_directories("${PROJECT_SOURCE_DIR}/src/minimax")
 
 add_executable(main main.cpp)
 target_link_libraries(main uttt ttt pthread)

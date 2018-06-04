@@ -208,8 +208,8 @@ int main()
     //BoardTest<uttt::IBoard>();
     //UtttHashTest();
     //MCTSTest<uttt::IBoard, MCTS_parallel<uttt::IBoard, uttt::RandomPlayout>>(20000);
-    ManagerTest<uttt::IBoard>();
+    //ManagerTest<uttt::IBoard>();
     //CountTest();
-    //BotTest<generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1>, uttt::IBoard>();
+    BotTest<generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1>, uttt::IBoard>();
     //CountUniqueBoardPositions<uttt::IBoard>();
 }

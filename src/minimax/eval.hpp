@@ -1,6 +1,6 @@
-#include "generic_bots.h"
+#include "minimax.h"
 
-namespace generic_bots {
+namespace minimax {
 
 template <typename IGame>
 double
