@@ -59,15 +59,16 @@ MCTSTest(long long num_iterations)
         std::cout << best[i].first << ": " << best[i].second.first / iter_num << ' ' << static_cast<double>(best[i].second.second) / iter_num << '\n';
 }
 
+template <typename IGame>
 void
 ManagerTest()
 {
-    auto game = new uttt::IBoard;
-    manager::Manager<uttt::IBoard> manager(game);
+    IGame game;
+    manager::Manager<uttt::IBoard> manager(&game);
 
     std::vector<game::IBot<uttt::IBoard> *> bots;
-    bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_parallel<uttt::IBoard>>(game, 1000));
-    bots.emplace_back(new generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1>(game, 9));
+    bots.emplace_back(new generic_bots::FixedMctsBot<uttt::IBoard, MCTS_parallel<uttt::IBoard>>(&game, 1000));
+    bots.emplace_back(new generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1>(&game, 9));
 
     std::vector<long long> bot_ids;
     for (auto bot : bots)
@@ -75,8 +76,6 @@ ManagerTest()
         bot_ids.emplace_back(manager.AddBot(bot));
         delete bot;
     }
-
-    delete game;
 
     std::cout << "Initial ratings:";
     for (long long id : bot_ids)
@@ -208,8 +207,8 @@ int main()
 {
     //BoardTest<uttt::IBoard>();
     //UtttHashTest();
-    MCTSTest<uttt::IBoard, MCTS_parallel<uttt::IBoard, uttt::RandomPlayout>>(20000);
-    //ManagerTest();
+    //MCTSTest<uttt::IBoard, MCTS_parallel<uttt::IBoard, uttt::RandomPlayout>>(20000);
+    ManagerTest<uttt::IBoard>();
     //CountTest();
     //BotTest<generic_bots::ABetaBot<uttt::IBoard, uttt::Eval1>, uttt::IBoard>();
     //CountUniqueBoardPositions<uttt::IBoard>();

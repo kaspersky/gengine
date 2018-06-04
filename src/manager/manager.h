@@ -29,8 +29,6 @@ public:
 
     ~Manager();
 
-    long long AddGame(const IGame *game);
-
     long long AddBot(const game::IBot<IGame> *bot);
 
     double GetBotRating(long long bot_id) const;
@@ -42,4 +40,4 @@ public:
 
 }
 
-#include <manager.hpp>
+#include "manager.hpp"
