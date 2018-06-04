@@ -60,5 +60,4 @@ public:
 Several generic bot implementations are already provided, for convenience:
 - generic::RandomBot
 - generic::MinimaxBot
-- generic::ABetaBot
 - generic::FixedMCTSBot
