@@ -27,17 +27,17 @@ static bool g_is_definitive_draw[262144];
 TBoard
 makeBoard(short k)
 {
-    return {k / g_factors[0] % 3, k / g_factors[1] % 3, k / g_factors[2] % 3,
-            k / g_factors[3] % 3, k / g_factors[4] % 3, k / g_factors[5] % 3,
-            k / g_factors[6] % 3, k / g_factors[7] % 3, k / g_factors[8] % 3};
+    return {{{{k / g_factors[0] % 3, k / g_factors[1] % 3, k / g_factors[2] % 3}},
+             {{k / g_factors[3] % 3, k / g_factors[4] % 3, k / g_factors[5] % 3}},
+             {{k / g_factors[6] % 3, k / g_factors[7] % 3, k / g_factors[8] % 3}}}};
 }
 
 TBoard
 makeBoard4(int k)
 {
-    return {k / g_factors4[0] % 4, k / g_factors4[1] % 4, k / g_factors4[2] % 4,
-            k / g_factors4[3] % 4, k / g_factors4[4] % 4, k / g_factors4[5] % 4,
-            k / g_factors4[6] % 4, k / g_factors4[7] % 4, k / g_factors4[8] % 4};
+    return {{{{k / g_factors4[0] % 4, k / g_factors4[1] % 4, k / g_factors4[2] % 4}},
+             {{k / g_factors4[3] % 4, k / g_factors4[4] % 4, k / g_factors4[5] % 4}},
+             {{k / g_factors4[6] % 4, k / g_factors4[7] % 4, k / g_factors4[8] % 4}}}};
 }
 
 static int
@@ -236,7 +236,7 @@ IBoard::RotateClockWise90()
     macro = g_macro_rotated_clockwise_90[macro];
     for (auto &m : micro)
         m = g_rotated_clockwise_90[m];
-    micro = {micro[6], micro[3], micro[0], micro[7], micro[4], micro[1], micro[8], micro[5], micro[2]};
+    micro = {{micro[6], micro[3], micro[0], micro[7], micro[4], micro[1], micro[8], micro[5], micro[2]}};
     if (next != -1)
         next = g_next_rotated_clockwise_90[next];
 }
@@ -247,7 +247,7 @@ IBoard::MirrorVertical()
     macro = g_macro_mirrored_vertical[macro];
     for (auto &m : micro)
         m = g_mirrored_vertical[m];
-    micro = {micro[2], micro[1], micro[0], micro[5], micro[4], micro[3], micro[8], micro[7], micro[6]};
+    micro = {{micro[2], micro[1], micro[0], micro[5], micro[4], micro[3], micro[8], micro[7], micro[6]}};
     if (next != -1)
         next = g_next_mirrored_vertical[next];
 }
