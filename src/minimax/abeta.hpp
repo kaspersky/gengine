@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <thread>
+#include <mutex>
 
 #include "minimax.h"
 
@@ -49,20 +51,36 @@ ABeta<IGame, Eval>::operator()(const IGame &game, int depth) const
         return {};
 
     auto moves = game.GetPossibleMoves();
-    std::vector<std::future<std::pair<game::IMove, double>>> futures;
+    std::vector<std::future<std::vector<std::pair<game::IMove, double>>>> futures;
+    int num_threads = std::thread::hardware_concurrency();
+    std::mutex mutex;
 
-    for (auto move : moves)
-        futures.emplace_back(std::async(std::launch::async, [game, depth, move] {
-            IGame new_game(game);
-            new_game.ApplyMove(move);
-            return std::pair<game::IMove, double>{move, -ABeta_<IGame, Eval>(new_game, depth - 1, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max())};
+    for (int i = 0; i < num_threads; ++i)
+        futures.emplace_back(std::async(std::launch::async, [game, depth, &moves, &mutex] {
+            std::vector<std::pair<game::IMove, double>> results;
+            while (true)
+            {
+                mutex.lock();
+                if (moves.empty())
+                {
+                    mutex.unlock();
+                    break;
+                }
+                game::IMove move = moves.back();
+                moves.pop_back();
+                mutex.unlock();
+                IGame new_game(game);
+                new_game.ApplyMove(move);
+                results.emplace_back(move, -ABeta_<IGame, Eval>(new_game, depth - 1, -std::numeric_limits<double>::max(), std::numeric_limits<double>::max()));
+            }
+            return results;
         }));
 
     std::vector<std::pair<game::IMove, double>> results;
     for (auto &f : futures)
     {
         auto r = f.get();
-        results.emplace_back(r.first, r.second);
+        results.insert(std::end(results), std::begin(r), std::end(r));
     }
 
     std::sort(std::begin(results), std::end(results), [](const std::pair<game::IMove, double> &e1, const std::pair<game::IMove, double> &e2) {
