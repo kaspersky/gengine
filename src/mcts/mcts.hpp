@@ -166,7 +166,7 @@ MCTS01_(MCTSNode *root, const IGame &root_game, std::mt19937 &gen)
         auto it = node->children.find(m);
         if (it == node->children.end())
         {
-            auto new_node = new MCTSNode(m);
+            auto new_node = new MCTSNode;
             game.ApplyMove(m);
             node->children.emplace(m, new_node);
             node = new_node;
