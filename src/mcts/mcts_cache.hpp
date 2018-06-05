@@ -129,15 +129,36 @@ template <typename IGame, typename RandomPlayout>
 std::vector<MCTSResults>
 MCTS_cache<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) const
 {
-    std::unordered_set<GameData<IGame> *, GameDataHash<IGame>, GameDataEqual<IGame>> cache;
-    auto game_data = new GameData<IGame>(game);
-    cache.insert(game_data);
-    for (long long i = 0; i < iterations; ++i)
-        MCTS_cache_<IGame, RandomPlayout>(cache, game_data);
+    std::vector<std::future<std::vector<MCTSResults>>> futures;
+    int num_threads = std::thread::hardware_concurrency();
+    for (int i = 0; i < num_threads; ++i)
+        futures.emplace_back(std::async(std::launch::async, [game, iterations] {
+            std::unordered_set<GameData<IGame> *, GameDataHash<IGame>, GameDataEqual<IGame>> cache;
+            auto game_data = new GameData<IGame>(game);
+            cache.insert(game_data);
+            for (int i = 0; i < iterations; ++i)
+                MCTS_cache_<IGame, RandomPlayout>(cache, game_data);
+            std::vector<MCTSResults> results;
+            for (auto it : game_data->children)
+                results.emplace_back(it.first, it.second->value, it.second->total);
+            for (auto it : cache)
+                delete it;
+            return results;
+        }));
+
+    std::unordered_map<game::IMove, std::pair<double, long long>> um_results;
+    for (auto &f : futures)
+    {
+        auto result = f.get();
+        for (const auto &r : result)
+        {
+            auto &p = um_results[r.move];
+            p.first += r.value, p.second += r.total;
+        }
+    }
+
     std::vector<MCTSResults> results;
-    for (auto it : game_data->children)
-        results.emplace_back(it.first, it.second->value, it.second->total);
-    for (auto it : cache)
-        delete it;
+    for (auto it : um_results)
+        results.emplace_back(it.first, it.second.first, it.second.second);
     return results;
 }
