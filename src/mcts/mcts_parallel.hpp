@@ -65,12 +65,10 @@ MCTS_parallel_(MCTSPNode *root, const IGame &root_game)
         for (unsigned i = 0; i < nodes.size(); ++i, p = 3 - p)
         {
             ++nodes[i]->total;
-            if (status == game::Draw)
-                continue;
             if (p == status)
-                nodes[i]->value += 1;
-            else
-                nodes[i]->value -= 1;
+                nodes[i]->value += 1.0;
+            else if (status == game::Draw)
+                nodes[i]->value += 0.5;
         }
         return;
     }
@@ -88,12 +86,10 @@ MCTS_parallel_(MCTSPNode *root, const IGame &root_game)
         for (unsigned i = 0; i < nodes.size(); ++i, p = 3 - p)
         {
             ++nodes[i]->total;
-            if (status == game::Draw)
-                continue;
             if (p == status)
-                nodes[i]->value += 1;
-            else
-                nodes[i]->value -= 1;
+                nodes[i]->value += 1.0;
+            else if (status == game::Draw)
+                nodes[i]->value += 0.5;
         }
         nodes.pop_back();
     }

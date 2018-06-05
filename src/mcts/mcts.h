@@ -57,12 +57,6 @@ struct MCTS
 };
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-struct MCTS01
-{
-    std::vector<MCTSResults> operator()(const IGame &game, long long iterations) const;
-};
-
-template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
 struct MCTS_parallel
 {
     std::vector<MCTSResults> operator()(const IGame &game, long long iterations) const;

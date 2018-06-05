@@ -68,12 +68,10 @@ MCTS_cache_(std::unordered_set<GameData<IGame> *, GameDataHash<IGame>, GameDataE
         for (unsigned i = 1; i < nodes.size(); ++i, player = 3 - player)
         {
             ++nodes[i]->total;
-            if (status == game::Draw)
-                continue;
             if (player == status)
-                nodes[i]->value += 1;
-            else
-                nodes[i]->value -= 1;
+                nodes[i]->value += 1.0;
+            else if (status == game::Draw)
+                nodes[i]->value += 0.5;
         }
         return;
     }
@@ -117,12 +115,10 @@ MCTS_cache_(std::unordered_set<GameData<IGame> *, GameDataHash<IGame>, GameDataE
         for (unsigned i = 1; i < nodes.size(); ++i, player = 3 - player)
         {
             ++nodes[i]->total;
-            if (status == game::Draw)
-                continue;
             if (player == status)
-                nodes[i]->value += 1;
-            else
-                nodes[i]->value -= 1;
+                nodes[i]->value += 1.0;
+            else if (status == game::Draw)
+                nodes[i]->value += 0.5;
         }
 
         nodes.pop_back();
