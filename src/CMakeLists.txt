@@ -8,4 +8,4 @@ include_directories("${PROJECT_SOURCE_DIR}/src/generic_bots")
 include_directories("${PROJECT_SOURCE_DIR}/src/minimax")
 
 add_executable(main main.cpp)
-target_link_libraries(main uttt ttt pthread)
+target_link_libraries(main uttt ttt pthread manager)

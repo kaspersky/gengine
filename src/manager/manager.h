@@ -38,6 +38,11 @@ public:
     void RoundRobin();
 };
 
+struct MM
+{
+    std::pair<double, double> operator()(double rating1, double rating2, double result1) const;
+};
+
 }
 
 #include "manager.hpp"
