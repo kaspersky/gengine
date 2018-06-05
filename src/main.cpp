@@ -41,10 +41,11 @@ MCTSTest(long long num_iterations)
         auto t1 = std::chrono::high_resolution_clock::now();
         auto results = MCTS()({}, num_iterations);
         auto t2 = std::chrono::high_resolution_clock::now();
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         long long total = 0;
         for (const auto &result : results)
             total += result.total;
-        std::cout << "MCTS done: " << total + 1 << " nodes in " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << '\n';
+        std::cout << "MCTS done: " << total + 1 << " nodes in " << millis << " ms: " << double(total) / millis * 1000 << " nps\n";
 
         for (const auto &result : results)
         {
