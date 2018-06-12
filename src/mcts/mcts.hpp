@@ -87,7 +87,7 @@ MCTS_(MCTSNode *root, const IGame &root_game, std::mt19937 &gen)
 
 template <typename IGame, typename RandomPlayout>
 std::vector<MCTSResults>
-MCTS<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) const
+MCTS(const IGame &game, long long iterations)
 {
     std::vector<std::future<std::vector<MCTSResults>>> futures;
     int num_threads = std::thread::hardware_concurrency();

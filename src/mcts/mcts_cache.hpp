@@ -127,7 +127,7 @@ MCTS_cache_(std::unordered_set<GameData<IGame> *, GameDataHash<IGame>, GameDataE
 
 template <typename IGame, typename RandomPlayout>
 std::vector<MCTSResults>
-MCTS_cache<IGame, RandomPlayout>::operator()(const IGame &game, long long iterations) const
+MCTS_cache(const IGame &game, long long iterations)
 {
     std::vector<std::future<std::vector<MCTSResults>>> futures;
     int num_threads = std::thread::hardware_concurrency();

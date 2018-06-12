@@ -6,7 +6,7 @@
 namespace generic_bots {
 
 template <typename IGame, typename MCTS>
-FixedMctsBot<IGame, MCTS>::FixedMctsBot(const IGame *game, long long num_iterations): game::IBot<IGame>(game), num_iterations(num_iterations)
+FixedMctsBot<IGame, MCTS>::FixedMctsBot(const IGame *game, const MCTS &mcts, long long num_iterations): game::IBot<IGame>(game), mcts(mcts), num_iterations(num_iterations)
 {
 }
 
@@ -14,14 +14,14 @@ template <typename IGame, typename MCTS>
 game::IBot<IGame> *
 FixedMctsBot<IGame, MCTS>::Clone() const
 {
-    return new FixedMctsBot(this->game, num_iterations);
+    return new FixedMctsBot(this->game, mcts, num_iterations);
 }
 
 template <typename IGame, typename MCTS>
 game::IMove
 FixedMctsBot<IGame, MCTS>::MakeMove()
 {
-    auto results = MCTS()(*this->game, num_iterations);
+    auto results = mcts(*this->game, num_iterations);
 
     double max = -1.1;
     game::IMove move = -1;

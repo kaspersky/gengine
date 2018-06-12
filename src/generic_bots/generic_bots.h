@@ -8,10 +8,11 @@ namespace generic_bots {
 template <typename IGame, typename MCTS>
 class FixedMctsBot: public game::IBot<IGame>
 {
+    MCTS mcts;
     long long num_iterations;
 
 public:
-    FixedMctsBot(const IGame *game, long long num_iterations);
+    FixedMctsBot(const IGame *game, const MCTS &mcts, long long num_iterations);
 
     game::IBot<IGame> *Clone() const;
 

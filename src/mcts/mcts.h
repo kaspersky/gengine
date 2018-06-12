@@ -51,22 +51,16 @@ struct RandomPlayout
 };
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-struct MCTS
-{
-    std::vector<MCTSResults> operator()(const IGame &game, long long iterations) const;
-};
+std::vector<MCTSResults>
+MCTS(const IGame &game, long long iterations);
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-struct MCTS_parallel
-{
-    std::vector<MCTSResults> operator()(const IGame &game, long long iterations) const;
-};
+std::vector<MCTSResults>
+MCTS_parallel(const IGame &game, long long iterations);
 
 template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
-struct MCTS_cache
-{
-    std::vector<MCTSResults> operator()(const IGame &game, long long iterations) const;
-};
+std::vector<MCTSResults>
+MCTS_cache(const IGame &game, long long iterations);
 
 template <typename IGame>
 long long
