@@ -4,6 +4,8 @@
 
 #include "mcts.h"
 
+namespace mcts {
+
 template <typename IGame>
 struct GameData
 {
@@ -161,4 +163,6 @@ MCTS_cache(const IGame &game, long long iterations)
     for (auto it : um_results)
         results.emplace_back(it.first, it.second.first, it.second.second);
     return results;
+}
+
 }

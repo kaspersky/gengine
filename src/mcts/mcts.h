@@ -5,6 +5,8 @@
 
 #include <game.h>
 
+namespace mcts {
+
 struct MCTSResults
 {
     game::IMove move;
@@ -65,6 +67,8 @@ MCTS_cache(const IGame &game, long long iterations);
 template <typename IGame>
 long long
 CountUnique(const MCTSNode &root, const IGame &game);
+
+}
 
 #include "mcts.hpp"
 #include "mcts_parallel.hpp"

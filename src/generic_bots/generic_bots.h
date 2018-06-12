@@ -20,26 +20,6 @@ public:
 };
 
 template <typename IGame>
-struct FixedMctsWithCachingBot: public game::IBot<IGame>
-{
-    long long num_iterations;
-    MCTSNode *root;
-
-    void AdvanceRoot(const game::IMove &move);
-
-public:
-    FixedMctsWithCachingBot(const IGame *game, long long num_iterations);
-
-    FixedMctsWithCachingBot(const IGame *game, long long num_iterations, const MCTSNode *root);
-
-    game::IBot<IGame> *Clone() const;
-
-    game::IMove MakeMove();
-
-    void SendMove(const game::IMove &move);
-};
-
-template <typename IGame>
 class RandomBot: public game::IBot<IGame>
 {
 public:

@@ -60,7 +60,7 @@ MCTSTest(MCTS &&mcts, long long num_iterations)
         std::cout << best[i].first << ": " << best[i].second.first / iter_num << ' ' << static_cast<double>(best[i].second.second) / iter_num << '\n';
 }
 
-template <typename IGame, typename RandomPlayout=RandomPlayout<IGame>>
+template <typename IGame, typename RandomPlayout=mcts::RandomPlayout<IGame>>
 void
 ManagerTest()
 {
@@ -68,7 +68,7 @@ ManagerTest()
     manager::Manager<IGame> manager(&game);
 
     std::vector<game::IBot<IGame> *> bots;
-    bots.emplace_back(new generic_bots::FixedMctsBot<IGame, std::vector<MCTSResults> (*)(const IGame &, long long)>(&game, MCTS_parallel<IGame, RandomPlayout>, 1000));
+    bots.emplace_back(new generic_bots::FixedMctsBot<IGame, std::vector<mcts::MCTSResults> (*)(const IGame &, long long)>(&game, mcts::MCTS_parallel<IGame, RandomPlayout>, 1000));
     bots.emplace_back(new generic_bots::MinimaxBot<IGame, minimax::ABeta<IGame>>(&game, 9));
 
     std::vector<long long> bot_ids;
@@ -211,12 +211,12 @@ int main()
 
     UtttHashTest();
 
-    MCTSTest<ttt::Board>(MCTS<ttt::Board>, 100000);
-    MCTSTest<ttt::Board>(MCTS_parallel<ttt::Board>, 100000);
-    MCTSTest<ttt::Board>(MCTS_cache<ttt::Board>, 100000);
-    MCTSTest<uttt::IBoard>(MCTS<uttt::IBoard, uttt::RandomPlayout>, 100000);
-    MCTSTest<uttt::IBoard>(MCTS_parallel<uttt::IBoard, uttt::RandomPlayout>, 100000);
-    MCTSTest<uttt::IBoard>(MCTS_cache<uttt::IBoard, uttt::RandomPlayout>, 100000);
+    MCTSTest<ttt::Board>(mcts::MCTS<ttt::Board>, 100000);
+    MCTSTest<ttt::Board>(mcts::MCTS_parallel<ttt::Board>, 100000);
+    MCTSTest<ttt::Board>(mcts::MCTS_cache<ttt::Board>, 100000);
+    MCTSTest<uttt::IBoard>(mcts::MCTS<uttt::IBoard, uttt::RandomPlayout>, 100000);
+    MCTSTest<uttt::IBoard>(mcts::MCTS_parallel<uttt::IBoard, uttt::RandomPlayout>, 100000);
+    MCTSTest<uttt::IBoard>(mcts::MCTS_cache<uttt::IBoard, uttt::RandomPlayout>, 100000);
 
     ManagerTest<ttt::Board>();
     ManagerTest<uttt::IBoard, uttt::RandomPlayout>();

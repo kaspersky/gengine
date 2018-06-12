@@ -4,6 +4,8 @@
 
 #include "minimax.h"
 
+namespace minimax {
+
 template <typename IGame, typename Eval>
 static double
 ABeta_(const IGame &game, int depth, double alfa, double beta)
@@ -40,8 +42,6 @@ ABeta_(const IGame &game, int depth, double alfa, double beta)
 
     return result;
 }
-
-namespace minimax {
 
 template <typename IGame, typename Eval>
 std::vector<std::pair<game::IMove, double>>

@@ -6,6 +6,8 @@
 
 #include "mcts.h"
 
+namespace mcts {
+
 struct MCTSPNode
 {
     game::IMove move;
@@ -127,4 +129,6 @@ MCTS_parallel(const IGame &game, long long iterations)
     for (auto it : um_results)
         results.emplace_back(it.first, it.second.first, it.second.second);
     return results;
+}
+
 }

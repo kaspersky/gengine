@@ -5,6 +5,8 @@
 
 #include "mcts.h"
 
+namespace mcts {
+
 template <typename IGame>
 int
 RandomPlayout<IGame>::operator()(const IGame &game) const
@@ -142,4 +144,6 @@ CountUnique(const MCTSNode &root, const IGame &game)
     std::unordered_set<IGame> set;
     CountUnique_<IGame>(root, game, set);
     return set.size();
+}
+
 }

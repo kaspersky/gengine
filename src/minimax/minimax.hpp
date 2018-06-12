@@ -2,6 +2,8 @@
 
 #include "minimax.h"
 
+namespace minimax {
+
 template <typename IGame, typename Eval>
 static double
 Minimax_(const IGame &game, int depth)
@@ -35,8 +37,6 @@ Minimax_(const IGame &game, int depth)
 
     return result;
 }
-
-namespace minimax {
 
 template <typename IGame, typename Eval>
 std::vector<std::pair<game::IMove, double>>
