@@ -247,6 +247,7 @@ UtttHashTest()
 
 int main()
 {
+#if 0
     BoardTest<ttt::Board>();
     BoardTest<uttt::IBoard>();
 
@@ -271,5 +272,7 @@ int main()
     BotTest<generic_bots::MinimaxBot<uttt::IBoard, minimax::ABeta<uttt::IBoard, uttt::Eval1>>, uttt::IBoard>();
 
     CountUniqueBoardPositions<ttt::Board>(20);
+    CountUniqueBoardPositions<uttt::IBoard>(20);
+#endif
     CountUniqueBoardPositions<uttt::IBoard>(20);
 }

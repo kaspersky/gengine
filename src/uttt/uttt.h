@@ -26,10 +26,14 @@ class IBoard
 
     void MirrorVertical();
 
+    void Update();
+
 public:
     IBoard();
 
     IBoard(int macro, const std::array<short, 9> &micro, int8_t next, char player);
+
+    bool operator<(const IBoard &other) const;
 
     bool operator==(const IBoard &other) const;
 

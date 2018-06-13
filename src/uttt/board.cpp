@@ -201,33 +201,17 @@ IBoard::IBoard(int macro, const std::array<short, 9> &micro, int8_t next, char p
 bool
 IBoard::operator==(const IBoard &other) const
 {
-    if (macro == other.macro && micro == other.micro && next == other.next)
-        return true;
-    IBoard rotated(*this);
-    rotated.RotateClockWise90();
-    if (rotated.macro == other.macro && rotated.micro == other.micro && rotated.next == other.next)
-        return true;
-    rotated.RotateClockWise90();
-    if (rotated.macro == other.macro && rotated.micro == other.micro && rotated.next == other.next)
-        return true;
-    rotated.RotateClockWise90();
-    if (rotated.macro == other.macro && rotated.micro == other.micro && rotated.next == other.next)
-        return true;
+    return macro == other.macro && micro == other.micro && next == other.next;
+}
 
-    IBoard vertical(*this);
-    vertical.MirrorVertical();
-    if (vertical.macro == other.macro && vertical.micro == other.micro && vertical.next == other.next)
-        return true;
-    vertical.RotateClockWise90();
-    if (vertical.macro == other.macro && vertical.micro == other.micro && vertical.next == other.next)
-        return true;
-    vertical.RotateClockWise90();
-    if (vertical.macro == other.macro && vertical.micro == other.micro && vertical.next == other.next)
-        return true;
-    vertical.RotateClockWise90();
-    if (vertical.macro == other.macro && vertical.micro == other.micro && vertical.next == other.next)
-        return true;
-    return false;
+bool
+IBoard::operator<(const IBoard &other) const
+{
+    if (next != other.next)
+        return next < other.next;
+    if (macro != other.macro)
+        return macro < other.macro;
+    return micro < other.micro;
 }
 
 void
@@ -252,15 +236,35 @@ IBoard::MirrorVertical()
         next = g_next_mirrored_vertical[next];
 }
 
+void
+IBoard::Update()
+{
+    IBoard rotated(*this);
+    rotated.RotateClockWise90();
+    *this = std::min(*this, rotated);
+    rotated.RotateClockWise90();
+    *this = std::min(*this, rotated);
+    rotated.RotateClockWise90();
+    *this = std::min(*this, rotated);
+
+    rotated = *this;
+    rotated.MirrorVertical();
+    *this = std::min(*this, rotated);
+    rotated.RotateClockWise90();
+    *this = std::min(*this, rotated);
+    rotated.RotateClockWise90();
+    *this = std::min(*this, rotated);
+    rotated.RotateClockWise90();
+    *this = std::min(*this, rotated);
+}
+
 std::size_t
 IBoard::Hash() const
 {
-    std::size_t result = g_hash4[macro];
-    result <<= 6;
-    result ^= g_hash[4][micro[4]];
-    result ^= g_hash[0][micro[0]] ^ g_hash[2][micro[2]] ^ g_hash[6][micro[6]] ^ g_hash[8][micro[8]];
-    result ^= g_hash[1][micro[1]] ^ g_hash[3][micro[3]] ^ g_hash[5][micro[5]] ^ g_hash[7][micro[7]];
-    return result;
+    std::size_t result = macro;
+    for (auto mi : micro)
+        result = (result << 4) ^ mi;
+    return (result << 4) ^ next;
 }
 
 void
@@ -315,6 +319,7 @@ IBoard::ApplyMove(const game::IMove &move)
     else
         next = -1;
     player = 3 - player;
+    Update();
 }
 
 int
