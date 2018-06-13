@@ -121,18 +121,20 @@ CountTest(int depth)
 
 template <typename IGame>
 void
-CountUniqueBoardPositions()
+CountUniqueBoardPositions(int depth)
 {
-    int depth = 20;
+    std::cout << "Game size: " << sizeof(IGame) << " bytes\n";
     long long total = 1;
-    std::unordered_set<IGame> set, next_set;
-    set.insert({{}});
+    std::unordered_set<IGame> sets[2];
+    sets[0].insert({{}});
+    int set_ind = 0;
     for (int i = 0; i < depth; ++i)
     {
+        std::unordered_set<long long> unique_hashes;
         std::cout << "Working on depth: " << i + 1 << '\n';
+        sets[1 - set_ind].clear();
         auto t1 = std::chrono::high_resolution_clock::now();
-        next_set.clear();
-        for (auto g : set)
+        for (const auto &g : sets[set_ind])
         {
             if (g.GetStatus() != game::Undecided)
                 continue;
@@ -141,15 +143,18 @@ CountUniqueBoardPositions()
             {
                 auto ng = g;
                 ng.ApplyMove(m);
-                next_set.insert(ng);
+                sets[1 - set_ind].emplace(ng);
+                unique_hashes.emplace(ng.Hash());
             }
         }
-        total += next_set.size();
-        set = next_set;
         auto t2 = std::chrono::high_resolution_clock::now();
         auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-        std::cout << "Total count: " << total << '\n';
-        std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds\n";
+        total += sets[1 - set_ind].size();
+        std::cout << "Current depth hash count: " << unique_hashes.size() << " / " << sets[1 - set_ind].size() << " = " << double(unique_hashes.size()) * 100.0 / sets[1 - set_ind].size() << "%\n";
+        std::cout << "Current depth node count: " << sets[1 - set_ind].size() << ", size: " << sets[1 - set_ind].size() * sizeof(IGame) / (1 << 20) << "MB\n";
+        std::cout << "Current depth duration  : " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds, " << double(sets[1 - set_ind].size()) / millis * 1000 << " nps\n";
+        std::cout << "Total count             : " << total << '\n';
+        set_ind = 1 - set_ind;
     }
 }
 
@@ -265,6 +270,6 @@ int main()
     BotTest<generic_bots::MinimaxBot<ttt::Board, minimax::ABeta<ttt::Board>>, ttt::Board>();
     BotTest<generic_bots::MinimaxBot<uttt::IBoard, minimax::ABeta<uttt::IBoard, uttt::Eval1>>, uttt::IBoard>();
 
-    CountUniqueBoardPositions<ttt::Board>();
-    CountUniqueBoardPositions<uttt::IBoard>();
+    CountUniqueBoardPositions<ttt::Board>(20);
+    CountUniqueBoardPositions<uttt::IBoard>(20);
 }
