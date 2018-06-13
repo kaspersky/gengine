@@ -83,10 +83,10 @@ Count(int depth)
 
 template <typename IGame>
 long long
-CountBFS(int depth)
+CountUniqueBFS(int depth)
 {
     std::unordered_set<IGame> total, set, next_set;
-    set.insert(IGame()), total.insert(IGame());
+    set.insert({{}}), total.insert({{}});
     for (int i = 0; i < depth; ++i)
     {
         next_set.clear();
@@ -106,6 +106,34 @@ CountBFS(int depth)
         set = next_set;
     }
     return total.size();
+}
+
+template <typename IGame>
+long long
+CountBFS(int depth)
+{
+    long long total = 1;
+    std::vector<IGame> levels[2] = {{{}}};
+    int current_level = 0;
+    for (int i = 0; i < depth; ++i)
+    {
+        levels[1 - current_level].clear();
+        for (const auto &g : levels[current_level])
+        {
+            if (g.GetStatus() != Undecided)
+                continue;
+            auto moves = g.GetPossibleMoves();
+            for (auto m : moves)
+            {
+                auto ng = g;
+                ng.ApplyMove(m);
+                levels[1 - current_level].emplace_back(ng);
+                ++total;
+            }
+        }
+        current_level = 1 - current_level;
+    }
+    return total;
 }
 
 }

@@ -95,22 +95,23 @@ ManagerTest()
     }
 }
 
+template <typename IGame>
 void
-CountTest()
+CountTest(int depth)
 {
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < depth; ++i)
     {
         std::cout << "Working on depth: " << i + 1 << '\n';
 
         auto t1 = std::chrono::high_resolution_clock::now();
-        auto r = game::Count<uttt::IBoard>(i);
+        auto r = game::Count<IGame>(i);
         auto t2 = std::chrono::high_resolution_clock::now();
         long long millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         std::cout << "Count: " << r << '\n';
         std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds\n";
 
         t1 = std::chrono::high_resolution_clock::now();
-        auto count = game::CountBFS<uttt::IBoard>(i);
+        auto count = game::CountBFS<IGame>(i);
         t2 = std::chrono::high_resolution_clock::now();
         std::cout << "DFS count: " << count << '\n';
         millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
@@ -149,6 +150,41 @@ CountUniqueBoardPositions()
         auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
         std::cout << "Total count: " << total << '\n';
         std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds\n";
+    }
+}
+
+template <typename IGame>
+void
+static CountBFS(int depth)
+{
+    std::cout << "Game size: " << sizeof(IGame) << " bytes\n";
+    long long total = 1;
+    std::vector<IGame> levels[2] = {{{}}};
+    int current_level = 0;
+    for (int i = 0; i < depth; ++i)
+    {
+        std::cout << "Working on depth: " << i + 1 << '\n';
+        levels[1 - current_level].clear();
+        auto t1 = std::chrono::high_resolution_clock::now();
+        for (const auto &g : levels[current_level])
+        {
+            if (g.GetStatus() != game::Undecided)
+                continue;
+            auto moves = g.GetPossibleMoves();
+            for (auto m : moves)
+            {
+                auto ng = g;
+                ng.ApplyMove(m);
+                levels[1 - current_level].emplace_back(ng);
+            }
+        }
+        auto t2 = std::chrono::high_resolution_clock::now();
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+        total += levels[1 - current_level].size();
+        std::cout << "Current depth count: " << levels[1 - current_level].size() << ", size: " << levels[1 - current_level].size() * sizeof(IGame) / (1 << 20) << "MB\n";
+        std::cout << "Total count: " << total << ", size: " << total * sizeof(IGame) / (1 << 20) << " MB\n";
+        std::cout << "Duration: " << millis / 1000 << " seconds " << millis % 1000 << " milliseconds, " << double(levels[1 - current_level].size()) / millis * 1000 << " nps\n";
+        current_level = 1 - current_level;
     }
 }
 
@@ -221,7 +257,10 @@ int main()
     ManagerTest<ttt::Board>();
     ManagerTest<uttt::IBoard, uttt::RandomPlayout>();
 
-    CountTest();
+    CountTest<ttt::Board>(10);
+    CountTest<uttt::IBoard>(10);
+    CountBFS<ttt::Board>(10);
+    CountBFS<uttt::IBoard>(10);
 
     BotTest<generic_bots::MinimaxBot<ttt::Board, minimax::ABeta<ttt::Board>>, ttt::Board>();
     BotTest<generic_bots::MinimaxBot<uttt::IBoard, minimax::ABeta<uttt::IBoard, uttt::Eval1>>, uttt::IBoard>();

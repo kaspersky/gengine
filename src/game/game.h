@@ -39,6 +39,9 @@ template <typename IGame>
 long long Count(int depth);
 
 template <typename IGame>
+long long CountUniqueBFS(int depth);
+
+template <typename IGame>
 long long CountBFS(int depth);
 
 }
