@@ -195,20 +195,16 @@ IBoard::ToBytes(const IBoard &board)
 {
     std::vector<char> bytes;
 
-    auto macro = board.macro;
-    for (int i = 3; i >= 0; --i)
-    {
-        bytes.emplace_back(macro & 0xff);
-        macro >>= 8;
-    }
+    uint32_t macro = board.macro;
+    bytes.emplace_back(macro >> 24);
+    bytes.emplace_back((macro >> 16) & 0xff);
+    bytes.emplace_back((macro >> 8) & 0xff);
+    bytes.emplace_back(macro & 0xff);
     for (auto mi : board.micro)
     {
-        auto m = mi;
-        for (int i = 1; i >= 0; --i)
-        {
-            bytes.emplace_back(m & 0xff);
-            m >>= 8;
-        }
+        uint16_t m = mi;
+        bytes.emplace_back(m >> 8);
+        bytes.emplace_back(m & 0xff);
     }
     bytes.emplace_back(board.next);
     bytes.emplace_back(board.player);
@@ -220,15 +216,15 @@ IBoard
 IBoard::FromBytes(const std::vector<char> &bytes)
 {
     int32_t macro = 0;
-    std::array<int16_t, 9> micro;
+    std::array<int16_t, 9> micro = {};
     int8_t next, player = 0;
 
     unsigned offset = 0;
-    for (int i = 0; i < 3; ++i, ++offset)
-        macro = (macro << 8) | bytes[offset];
+    for (int i = 0; i < 4; ++i)
+        macro = (macro << 8) | uint8_t(bytes[offset++]);
     for (int i = 0; i < 9; ++i)
     {
-        micro[i] = (bytes[offset] << 8) | bytes[offset];
+        micro[i] = (uint8_t(bytes[offset]) << 8) | uint8_t(bytes[offset + 1]);
         offset += 2;
     }
     next = bytes[offset];
