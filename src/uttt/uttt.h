@@ -17,16 +17,19 @@ class IBoard
     friend RandomPlayout2;
     friend Eval1;
 
-    int macro;
-    std::array<short, 9> micro;
+    int32_t macro;
+    std::array<int16_t, 9> micro;
     int8_t next;
-    game::IPlayer player;
+    int8_t player;
 
     void RotateClockWise90();
 
     void MirrorVertical();
 
 public:
+    static std::vector<char> ToBytes(const IBoard &board);
+    static IBoard FromBytes(const std::vector<char> &bytes);
+
     IBoard();
 
     IBoard(int macro, const std::array<short, 9> &micro, int8_t next, char player);
