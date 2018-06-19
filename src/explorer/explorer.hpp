@@ -8,7 +8,7 @@
 #include "explorer.h"
 
 #define LEVELS_FILENAME "levels"
-#define FILE_SIZE_LIMIT 512 * 1024 * 1024
+#define FILE_SIZE_LIMIT 1024 * 1024 * 1024
 
 namespace explorer {
 
@@ -20,59 +20,63 @@ LoadFromFile(const std::string &filename, std::vector<IGame> &data)
     if (!file.good())
         return;
 
-    long long total_bytes = 0;
-
     long long count = 0;
     char count_buf[8];
 
-    std::cout << "Reading " << count << " states from " << filename << '\n';
-
-    auto t1 = std::chrono::high_resolution_clock::now();
     file.read(count_buf, 8);
     for (int i = 0; i < 8; ++i)
         count = (count << 8) | uint8_t(count_buf[i]);
-    total_bytes += 8;
 
-    for (long long i = 0; i < count; ++i)
-    {
-        std::vector<char> bytes(Size);
-        file.read(&bytes[0], Size);
-        total_bytes += Size;
-        data.emplace_back(Reader()(bytes));
-    }
+    long long total_bytes = 8 + count * Size;
+
+    std::cout << "Reading " << count << " nodes from " << filename << '\n';
+    auto t1 = std::chrono::high_resolution_clock::now();
+    std::vector<char> all_bytes(count * Size);
+    file.read(&all_bytes[0], all_bytes.size());
     auto t2 = std::chrono::high_resolution_clock::now();
     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-    std::cout << "Reading done: " << total_bytes << " bytes in " << millis / 1000 << " s " << millis % 1000 << " ms: " << double(total_bytes) / 1024 * 1000 / 1024 / millis << " MB/s\n";
+    std::cout << "Reading done: " << total_bytes << " bytes in " << millis / 1000 << "s " << millis % 1000 << "ms, " << double(total_bytes) / 1024 * 1000 / 1024 / millis << " MB/s\n";
+
+    std::cout << "Serializing " << count << " nodes...\n";
+    t1 = std::chrono::high_resolution_clock::now();
+    for (unsigned long long offset = 0; offset < all_bytes.size(); offset += Size)
+        data.emplace_back(Reader()(&all_bytes[offset]));
+    t2 = std::chrono::high_resolution_clock::now();
+    millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    std::cout << "Serialization done: " << count << " nodes in " << millis / 1000 << "s " << millis % 1000 << "ms, " << double(count) * 1000 / millis << " nps, " << double(total_bytes) / 1024 * 1000 / 1024 / millis << " MB/s\n";
+
+    total_bytes += 8;
 }
 
 template <typename IGame, typename Writer>
 static void
 DumpToFile(const std::string &filename, const std::vector<IGame> &data)
 {
-    long long total_bytes = 0, count = data.size();
-    char count_buf[8];
+    long long count = data.size();
+
+    std::vector<char> all_bytes(8);
     for (int i = 7; i >= 0; --i)
     {
-        count_buf[i] = count & 0xff;
+        all_bytes[i] = count & 0xff;
         count >>= 8;
     }
-    
-    std::cout << "Writing " << data.size() << " states to " << filename << '\n';
-    std::ofstream file(filename, std::ios::binary);
+    count = data.size();
 
+    std::cout << "Serializing " << count << " nodes...\n";
     auto t1 = std::chrono::high_resolution_clock::now();
-    file.write(count_buf, 8);
-    total_bytes += 8;
-
     for (const auto &d : data)
-    {
-        auto bytes = Writer()(d);
-        file.write(&bytes[0], bytes.size());
-        total_bytes += bytes.size();
-    }
+        Writer()(d, all_bytes);
     auto t2 = std::chrono::high_resolution_clock::now();
     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-    std::cout << "Writing done: " << total_bytes << " bytes in " << millis / 1000 << " s " << millis % 1000 << " ms: " << double(total_bytes) / 1024 * 1000 / 1024 / millis << " MB/s\n";
+    std::cout << "Serialization done: " << count << " nodes in " << millis / 1000 << "s " << millis % 1000 << "ms, " << double(count) * 1000 / millis << " nps, " << double(all_bytes.size()) / 1024 * 1000 / 1024 / millis << " MB/s\n";
+
+    std::cout << "Writing " << count << " nodes to " << filename << '\n';
+    t1 = std::chrono::high_resolution_clock::now();
+    std::ofstream file(filename, std::ios::binary);
+    file.write(&all_bytes[0], all_bytes.size());
+    t2 = std::chrono::high_resolution_clock::now();
+    millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    std::cout << "Writing done: " << all_bytes.size() << " bytes in " << millis / 1000 << "s " << millis % 1000 << "ms, " << double(all_bytes.size()) / 1024 * 1000 / 1024 / millis << " MB/s\n";
 }
 
 static bool

@@ -54,12 +54,45 @@ public:
 
 struct IBoardReader
 {
-    IBoard operator()(const std::vector<char> &bytes) const;
+    template <typename InputIterator>
+    IBoard operator()(InputIterator iterator) const
+    {
+        int32_t macro = 0;
+        std::array<int16_t, 9> micro = {};
+        int8_t next, player = 0;
+
+        for (int i = 0; i < 4; ++i)
+            macro = (macro << 8) | uint8_t(*(iterator++));
+        for (int i = 0; i < 9; ++i)
+        {
+            micro[i] = uint8_t(*(iterator++)) << 8;
+            micro[i] |= uint8_t(*(iterator++));
+        }
+        next = *(iterator++);
+        player = *(iterator++);
+
+        return IBoard(macro, micro, next, player);
+    }
 };
 
 struct IBoardWriter
 {
-    std::vector<char> operator()(const IBoard &board) const;
+    void operator()(const IBoard &board, std::vector<char> &bytes) const
+    {
+        uint32_t macro = board.macro;
+        bytes.emplace_back(macro >> 24);
+        bytes.emplace_back((macro >> 16) & 0xff);
+        bytes.emplace_back((macro >> 8) & 0xff);
+        bytes.emplace_back(macro & 0xff);
+        for (auto mi : board.micro)
+        {
+            uint16_t m = mi;
+            bytes.emplace_back(m >> 8);
+            bytes.emplace_back(m & 0xff);
+        }
+        bytes.emplace_back(board.next);
+        bytes.emplace_back(board.player);
+    }
 };
 
 class UtttBot: public game::IBot<IBoard>
