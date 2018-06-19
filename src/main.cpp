@@ -257,32 +257,33 @@ template <typename IGame, typename Reader, typename Writer, int Size>
 void
 ReaderWriterTest(long long count)
 {
-    IGame game;
-    long long total_size = count * Size;
-    auto t1 = std::chrono::high_resolution_clock::now();
-    std::vector<char> output;
-    for (long long offset = 0; offset < total_size; offset += Size)
-        Writer()(game, output);
-    auto t2 = std::chrono::high_resolution_clock::now();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-    std::cout << "Write " << count << " nodes in " << millis << "ms, " << double(count) * 1000 / millis << " nps\n";
+    auto ts0 = std::chrono::high_resolution_clock::now();
 
-    std::vector<IGame> games(count);
-    t1 = std::chrono::high_resolution_clock::now();
-    for (long long offset = 0; offset < total_size; offset += Size)
-        games[offset / Size] = Reader()(&output[offset]);
-    t2 = std::chrono::high_resolution_clock::now();
-    millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-    std::cout << "Read " << count << " nodes in " << millis << "ms, " << double(count) * 1000 / millis << " nps\n";
+    std::vector<IGame> in_games(count);
+    auto ts1 = std::chrono::high_resolution_clock::now();
+    auto output = Writer()(in_games);
+    auto te1 = std::chrono::high_resolution_clock::now();
+
+    auto ts2 = std::chrono::high_resolution_clock::now();
+    auto out_games = Reader()(output);
+    auto te2 = std::chrono::high_resolution_clock::now();
 
     bool all_equal = true;
-    for (const auto &g : games)
-        if (!(g == game))
+    for (unsigned long long i = 0; i < in_games.size(); ++i)
+        if (!(in_games[i] == out_games[i]))
         {
             all_equal = false;
             break;
         }
     std::cout << "All equal: " << all_equal << '\n';
+    auto te0 = std::chrono::high_resolution_clock::now();
+
+    auto millis0 = std::chrono::duration_cast<std::chrono::milliseconds>(te0 - ts0).count();
+    auto millis1 = std::chrono::duration_cast<std::chrono::milliseconds>(te1 - ts1).count();
+    auto millis2 = std::chrono::duration_cast<std::chrono::milliseconds>(te2 - ts2).count();
+    std::cout << "Total " << 2 * count << " nodes in " << millis0 << "ms, " << double(count) * 2000 / millis0 << " nps\n";
+    std::cout << "Write " << count << " nodes in " << millis1 << "ms, " << double(count) * 1000 / millis1 << " nps\n";
+    std::cout << "Read " << count << " nodes in " << millis2 << "ms, " << double(count) * 1000 / millis2 << " nps\n";
 }
 
 int main()

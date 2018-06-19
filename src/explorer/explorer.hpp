@@ -13,12 +13,12 @@
 namespace explorer {
 
 template <typename IGame, typename Reader, int Size>
-static void
-LoadFromFile(const std::string &filename, std::vector<IGame> &data)
+static std::vector<IGame>
+LoadFromFile(const std::string &filename)
 {
     std::ifstream file(filename, std::ios::binary);
     if (!file.good())
-        return;
+        return {};
 
     long long count = 0;
     char count_buf[8];
@@ -31,21 +31,20 @@ LoadFromFile(const std::string &filename, std::vector<IGame> &data)
 
     std::cout << "Reading " << count << " nodes from " << filename << '\n';
     auto t1 = std::chrono::high_resolution_clock::now();
-    std::vector<char> all_bytes(count * Size);
-    file.read(&all_bytes[0], all_bytes.size());
+    std::vector<char> bytes(count * Size);
+    file.read(&bytes[0], bytes.size());
     auto t2 = std::chrono::high_resolution_clock::now();
     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
     std::cout << "Reading done: " << total_bytes << " bytes in " << millis / 1000 << "s " << millis % 1000 << "ms, " << double(total_bytes) / 1024 * 1000 / 1024 / millis << " MB/s\n";
 
     std::cout << "Serializing " << count << " nodes...\n";
     t1 = std::chrono::high_resolution_clock::now();
-    for (unsigned long long offset = 0; offset < all_bytes.size(); offset += Size)
-        data.emplace_back(Reader()(&all_bytes[offset]));
+    auto data = Reader()(bytes);
     t2 = std::chrono::high_resolution_clock::now();
     millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
     std::cout << "Serialization done: " << count << " nodes in " << millis / 1000 << "s " << millis % 1000 << "ms, " << double(count) * 1000 / millis << " nps, " << double(total_bytes) / 1024 * 1000 / 1024 / millis << " MB/s\n";
 
-    total_bytes += 8;
+    return data;
 }
 
 template <typename IGame, typename Writer>
@@ -54,29 +53,30 @@ DumpToFile(const std::string &filename, const std::vector<IGame> &data)
 {
     long long count = data.size();
 
-    std::vector<char> all_bytes(8);
+    char count_buf[8];
     for (int i = 7; i >= 0; --i)
     {
-        all_bytes[i] = count & 0xff;
+        count_buf[i] = count & 0xff;
         count >>= 8;
     }
+
     count = data.size();
 
     std::cout << "Serializing " << count << " nodes...\n";
     auto t1 = std::chrono::high_resolution_clock::now();
-    for (const auto &d : data)
-        Writer()(d, all_bytes);
+    auto bytes = Writer()(data);
     auto t2 = std::chrono::high_resolution_clock::now();
     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-    std::cout << "Serialization done: " << count << " nodes in " << millis / 1000 << "s " << millis % 1000 << "ms, " << double(count) * 1000 / millis << " nps, " << double(all_bytes.size()) / 1024 * 1000 / 1024 / millis << " MB/s\n";
+    std::cout << "Serialization done: " << count << " nodes in " << millis / 1000 << "s " << millis % 1000 << "ms, " << double(count) * 1000 / millis << " nps, " << double(bytes.size()) / 1024 * 1000 / 1024 / millis << " MB/s\n";
 
     std::cout << "Writing " << count << " nodes to " << filename << '\n';
     t1 = std::chrono::high_resolution_clock::now();
     std::ofstream file(filename, std::ios::binary);
-    file.write(&all_bytes[0], all_bytes.size());
+    file.write(count_buf, 8);
+    file.write(&bytes[0], bytes.size());
     t2 = std::chrono::high_resolution_clock::now();
     millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-    std::cout << "Writing done: " << all_bytes.size() << " bytes in " << millis / 1000 << "s " << millis % 1000 << "ms, " << double(all_bytes.size()) / 1024 * 1000 / 1024 / millis << " MB/s\n";
+    std::cout << "Writing done: " << bytes.size() << " bytes in " << millis / 1000 << "s " << millis % 1000 << "ms, " << double(bytes.size()) / 1024 * 1000 / 1024 / millis << " MB/s\n";
 }
 
 static bool
@@ -109,8 +109,7 @@ ExploreLevel(const std::string &directory, int next_level, int offset, int next_
 
     while (true)
     {
-        std::vector<IGame> data;
-        LoadFromFile<IGame, Reader, Size>(directory + '/' + std::to_string(next_level - 1) + '_' + std::to_string(offset), data);
+        auto data = LoadFromFile<IGame, Reader, Size>(directory + '/' + std::to_string(next_level - 1) + '_' + std::to_string(offset));
         if (data.empty())
             break;
 
