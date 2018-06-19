@@ -9,6 +9,7 @@
 #include <mcts.h>
 #include <manager.h>
 #include <generic_bots.h>
+#include <explorer.h>
 
 template <typename IGame>
 void
@@ -245,6 +246,13 @@ UtttHashTest()
     }
 }
 
+template <typename IGame, typename Reader, typename Writer, int Size>
+void
+ExplorerTest(const std::string &directory)
+{
+    explorer::Explore<IGame, Reader, Writer, Size>(directory);
+}
+
 int main()
 {
     BoardTest<ttt::Board>();
@@ -272,4 +280,6 @@ int main()
 
     CountUniqueBoardPositions<ttt::Board>(20);
     CountUniqueBoardPositions<uttt::IBoard>(20);
+
+    ExplorerTest<uttt::IBoard, uttt::IBoardReader, uttt::IBoardWriter, uttt::IBoardSize>("/mnt/e/uttt_data");
 }

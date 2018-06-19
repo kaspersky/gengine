@@ -7,14 +7,20 @@
 
 namespace uttt {
 
+const int IBoardSize = 24;
+
 struct RandomPlayout;
 struct RandomPlayout2;
+struct IBoardReader;
+struct IBoardWriter;
 struct Eval1;
 
 class IBoard
 {
     friend RandomPlayout;
     friend RandomPlayout2;
+    friend IBoardReader;
+    friend IBoardWriter;
     friend Eval1;
 
     int32_t macro;
@@ -27,9 +33,6 @@ class IBoard
     void MirrorVertical();
 
 public:
-    static std::vector<char> ToBytes(const IBoard &board);
-    static IBoard FromBytes(const std::vector<char> &bytes);
-
     IBoard();
 
     IBoard(int macro, const std::array<short, 9> &micro, int8_t next, char player);
@@ -47,6 +50,16 @@ public:
     std::size_t Hash() const;
 
     void Print() const;
+};
+
+struct IBoardReader
+{
+    IBoard operator()(const std::vector<char> &bytes) const;
+};
+
+struct IBoardWriter
+{
+    std::vector<char> operator()(const IBoard &board) const;
 };
 
 class UtttBot: public game::IBot<IBoard>

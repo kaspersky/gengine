@@ -190,8 +190,29 @@ static UtttInit g_UtttInit;
 
 namespace uttt {
 
+IBoard
+IBoardReader::operator()(const std::vector<char> &bytes) const
+{
+    int32_t macro = 0;
+    std::array<int16_t, 9> micro = {};
+    int8_t next, player = 0;
+
+    unsigned offset = 0;
+    for (int i = 0; i < 4; ++i)
+        macro = (macro << 8) | uint8_t(bytes[offset++]);
+    for (int i = 0; i < 9; ++i)
+    {
+        micro[i] = (uint8_t(bytes[offset]) << 8) | uint8_t(bytes[offset + 1]);
+        offset += 2;
+    }
+    next = bytes[offset];
+    player = bytes[offset + 1];
+
+    return IBoard(macro, micro, next, player);
+}
+
 std::vector<char>
-IBoard::ToBytes(const IBoard &board)
+IBoardWriter::operator()(const IBoard &board) const
 {
     std::vector<char> bytes;
 
@@ -210,27 +231,6 @@ IBoard::ToBytes(const IBoard &board)
     bytes.emplace_back(board.player);
 
     return bytes;
-}
-
-IBoard
-IBoard::FromBytes(const std::vector<char> &bytes)
-{
-    int32_t macro = 0;
-    std::array<int16_t, 9> micro = {};
-    int8_t next, player = 0;
-
-    unsigned offset = 0;
-    for (int i = 0; i < 4; ++i)
-        macro = (macro << 8) | uint8_t(bytes[offset++]);
-    for (int i = 0; i < 9; ++i)
-    {
-        micro[i] = (uint8_t(bytes[offset]) << 8) | uint8_t(bytes[offset + 1]);
-        offset += 2;
-    }
-    next = bytes[offset];
-    player = bytes[offset + 1];
-
-    return IBoard(macro, micro, next, player);
 }
 
 IBoard::IBoard(): macro(0), micro({}), next(-1), player(1)
