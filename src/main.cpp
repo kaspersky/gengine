@@ -253,6 +253,38 @@ ExplorerTest(const std::string &directory)
     explorer::Explore<IGame, Reader, Writer, Size>(directory);
 }
 
+template <typename IGame, typename Reader, typename Writer, int Size>
+void
+ReaderWriterTest(long long count)
+{
+    IGame game;
+    long long total_size = count * Size;
+    auto t1 = std::chrono::high_resolution_clock::now();
+    std::vector<char> output;
+    for (long long offset = 0; offset < total_size; offset += Size)
+        Writer()(game, output);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    std::cout << "Write " << count << " nodes in " << millis << "ms, " << double(count) * 1000 / millis << " nps\n";
+
+    std::vector<IGame> games(count);
+    t1 = std::chrono::high_resolution_clock::now();
+    for (long long offset = 0; offset < total_size; offset += Size)
+        games[offset / Size] = Reader()(&output[offset]);
+    t2 = std::chrono::high_resolution_clock::now();
+    millis = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+    std::cout << "Read " << count << " nodes in " << millis << "ms, " << double(count) * 1000 / millis << " nps\n";
+
+    bool all_equal = true;
+    for (const auto &g : games)
+        if (!(g == game))
+        {
+            all_equal = false;
+            break;
+        }
+    std::cout << "All equal: " << all_equal << '\n';
+}
+
 int main()
 {
     BoardTest<ttt::Board>();
@@ -282,4 +314,5 @@ int main()
     CountUniqueBoardPositions<uttt::IBoard>(20);
 
     ExplorerTest<uttt::IBoard, uttt::IBoardReader, uttt::IBoardWriter, uttt::IBoardSize>("/mnt/e/uttt_data");
+    ReaderWriterTest<uttt::IBoard, uttt::IBoardReader, uttt::IBoardWriter, uttt::IBoardSize>(10000000);
 }
