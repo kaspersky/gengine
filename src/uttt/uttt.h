@@ -79,19 +79,32 @@ struct IBoardWriter
 {
     void operator()(const IBoard &board, std::vector<char> &bytes) const
     {
-        uint32_t macro = board.macro;
-        bytes.emplace_back(macro >> 24);
-        bytes.emplace_back((macro >> 16) & 0xff);
-        bytes.emplace_back((macro >> 8) & 0xff);
-        bytes.emplace_back(macro & 0xff);
-        for (auto mi : board.micro)
-        {
-            uint16_t m = mi;
-            bytes.emplace_back(m >> 8);
-            bytes.emplace_back(m & 0xff);
-        }
-        bytes.emplace_back(board.next);
-        bytes.emplace_back(board.player);
+        bytes.resize(bytes.size() + IBoardSize);
+        auto it = &bytes[bytes.size() - IBoardSize];
+        it[0] = uint32_t(board.macro) >> 24;
+        it[1] = (uint32_t(board.macro) >> 16) & 0xff;
+        it[2] = (uint32_t(board.macro) >> 8) & 0xff;
+        it[3] = uint32_t(board.macro) & 0xff;
+        it[4] = uint16_t(board.micro[0]) >> 8;
+        it[5] = board.micro[0] & 0xff;
+        it[6] = uint16_t(board.micro[1]) >> 8;
+        it[7] = board.micro[1] & 0xff;
+        it[8] = uint16_t(board.micro[2]) >> 8;
+        it[9] = board.micro[2] & 0xff;
+        it[10] = uint16_t(board.micro[3]) >> 8;
+        it[11] = board.micro[3] & 0xff;
+        it[12] = uint16_t(board.micro[4]) >> 8;
+        it[13] = board.micro[4] & 0xff;
+        it[14] = uint16_t(board.micro[5]) >> 8;
+        it[15] = board.micro[5] & 0xff;
+        it[16] = uint16_t(board.micro[6]) >> 8;
+        it[17] = board.micro[6] & 0xff;
+        it[18] = uint16_t(board.micro[7]) >> 8;
+        it[19] = board.micro[7] & 0xff;
+        it[20] = uint16_t(board.micro[8]) >> 8;
+        it[21] = board.micro[8] & 0xff;
+        it[22] = board.next;
+        it[23] = board.player;
     }
 };
 
