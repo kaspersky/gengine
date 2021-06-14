@@ -7,7 +7,7 @@
 The IGame template represents a game state. It has to provide the following:
 
 ```C++
-// Copy constructor
+// Copy constructorr
 IGame(const IGame &other);
 
 bool operator==(const IGame &other) const;
